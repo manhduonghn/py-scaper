@@ -72,7 +72,7 @@ def extract_download_link(page: str) -> str:
     return apk_link
 
 # Ví dụ sử dụng:
-version = "18.15.34"  # Thay đổi phiên bản YouTube tùy theo nhu cầu
+version = "18.45.43"  # Thay đổi phiên bản YouTube tùy theo nhu cầu
 try:
     download_page_url = get_download_page(version)
     download_link = extract_download_link(download_page_url)
