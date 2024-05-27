@@ -50,14 +50,25 @@ def extract_download_link(page: str) -> str:
     sub_url = link['href'] if link else None
 
     download_page_url = apkmirror_url + sub_url
-    return download_page_url
+    response = scraper.get(download_page_url)
+    response.raise_for_status()
+
+    soup = BeautifulSoup(response.content, "html.parser")
+    # Tìm liên kết đầu tiên có href chứa 'key='
+    link = soup.find('a', href=lambda href: href and 'key=' in href)
+
+    # Lấy giá trị href nếu tìm thấy liên kết hợp lệ
+    sub_url = link['href'] if link else None
+
+    final_url = apkmirror_url + sub_url
+    return final_url
 
 # Example usage
 version = "7.02.51"
 # Call the function and print the valid URL
 download_page = get_download_page(version)
 if download_page:
-    download_page_url = extract_download_link(download_page)
-    print("Valid URL:", download_page_url)
+    download_link = extract_download_link(download_page)
+    print("Valid URL:", download_link)
 else:
     print("No valid download page found.")
