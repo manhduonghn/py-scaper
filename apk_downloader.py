@@ -1,6 +1,5 @@
 import cloudscraper
 from bs4 import BeautifulSoup
-from typing import Optional
 
 keywords = ["APK", "armeabi-v7a", "nodpi"]
     
@@ -25,7 +24,7 @@ def get_download_page(version: str) -> list:
     sub_links = soup.find_all('a', class_='accent_color')
 
     # Initialize list to store valid URLs
-    sub_urls = []
+    sub_urls = ""
 
     for sub_link in sub_links:
         parent = sub_link.find_parent('div', class_='table-cell')
@@ -43,13 +42,16 @@ def get_download_page(version: str) -> list:
 
     return download_page
 
-def extract_download_link(page: str) -> Optional[str]:
+def extract_download_link(page: str) -> None:
+
     response = scraper.get(page)
     response.raise_for_status()
 
     soup = BeautifulSoup(response.content, "html.parser")
+    # Tìm liên kết đầu tiên có href chứa 'key='
     link = soup.find('a', href=lambda href: href and 'key=' in href)
 
+    # Lấy giá trị href nếu tìm thấy liên kết hợp lệ
     valid_url = link['href'] if link else None
 
     return valid_url
@@ -58,7 +60,5 @@ def extract_download_link(page: str) -> Optional[str]:
 version = "7.02.51"
 # Call the function and print the valid URLs
 download_page = get_download_page(version)
-print("download_page")
 valid_url = extract_download_link(download_page)
 print("Valid URL:", valid_url)
-
