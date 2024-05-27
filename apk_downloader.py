@@ -1,7 +1,7 @@
 import cloudscraper
 from bs4 import BeautifulSoup
 
-def get_download_page(version: str) -> str:
+def get_download_page(version: str) -> list:
     
     keywords = ["APK", "arm64-v8a", "nodpi"]
     
@@ -23,24 +23,27 @@ def get_download_page(version: str) -> str:
     soup = BeautifulSoup(response.content, "html.parser")
     sub_links = soup.find_all('a', class_='accent_color')
 
-    # Khởi tạo danh sách lưu các URL hợp lệ
-    sub_urls= []
+    # Initialize list to store valid URLs
+    sub_urls = []
 
     for sub_link in sub_links:
         parent = sub_link.find_parent('div', class_='table-cell')
         if parent:
             siblings = parent.find_next_siblings('div')
-            # Kết hợp nội dung của thẻ cha và các phần tử liền kề để kiểm tra
+            # Combine text from parent and siblings to check
             texts = [parent.get_text(strip=True)] + [sibling.get_text(strip=True) for sibling in siblings]
 
-            # Kiểm tra xem tất cả các từ khóa đều có trong texts không
+            # Check if all keywords are present in the combined texts
             if all(any(keyword in text for text in texts) for keyword in keywords):
                 sub_urls.append(sub_link['href'])
 
-    return apkmirror_url + sub_urls
+    # Concatenate base URL with each sub URL
+    valid_urls = [apkmirror_url + sub_url for sub_url in sub_urls]
 
-# Ví dụ sử dụng
+    return valid_urls
+
+# Example usage
 version = "7.02.51"
-# Tùy chỉnh các từ khóa bạn muốn tìm
+# Call the function and print the valid URLs
 valid_urls = get_download_page(version)
 print("Valid URLs:", valid_urls)
