@@ -1,4 +1,3 @@
-import logging
 import cloudscraper
 from bs4 import BeautifulSoup
 
@@ -26,11 +25,11 @@ links = soup.find_all('a', class_='accent_color')
 valid_urls = []
 
 for link in links:
-    # Kiểm tra phần tử tiếp theo của thẻ <a>
-    next_sibling = link.find_next_sibling()
-    if next_sibling and next_sibling.get_text() == 'APK':
-        next_next_sibling = next_sibling.find_next_sibling()
-        if next_next_sibling and (next_next_sibling.get_text() == 'arm64-v8a' or next_next_sibling.get_text() == 'nodpi'):
-            valid_urls.append(link['href'])
+    parent = link.find_parent('div', class_='table-cell')
+    if parent:
+        siblings = parent.find_next_siblings('div')
+        if len(siblings) >= 3:
+            if 'APK' in siblings[0].get_text() and ('arm64-v8a' in siblings[1].get_text() or 'nodpi' in siblings[2].get_text()):
+                valid_urls.append(link['href'])
 
 print(valid_urls)
