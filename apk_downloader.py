@@ -27,11 +27,9 @@ valid_urls = []
 for link in links:
     parent = link.find_parent('div', class_='table-cell')
     if parent:
-        spans = parent.find_all('span')
-        if spans and 'APK' in spans[0].get_text():
-            siblings = parent.find_next_siblings('div')
-            if len(siblings) >= 3:
-                if 'arm64-v8a' in siblings[0].get_text() or 'nodpi' in siblings[2].get_text():
-                    valid_urls.append(link['href'])
+        siblings = parent.find_next_siblings('div')
+        if len(siblings) >= 3:
+            if 'APK' in siblings[0].get_text() and 'arm64-v8a' in siblings[1].get_text() and 'nodpi' in siblings[2].get_text():
+                valid_urls.append(link['href'])
 
 print("Valid URLs:", valid_urls)
