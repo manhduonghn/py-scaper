@@ -29,7 +29,14 @@ for link in links:
     if parent:
         siblings = parent.find_next_siblings('div')
         if len(siblings) >= 3:
+            # In ra các phần tử liên quan để kiểm tra
+            print("Link text:", link.get_text())
+            print("Sibling 1 text:", siblings[0].get_text())
+            print("Sibling 2 text:", siblings[1].get_text())
+            print("Sibling 3 text:", siblings[2].get_text())
+            print("\n")
+
             if 'APK' in siblings[0].get_text() and ('arm64-v8a' in siblings[1].get_text() or 'nodpi' in siblings[2].get_text()):
                 valid_urls.append(link['href'])
 
-print(valid_urls)
+print("Valid URLs:", valid_urls)
