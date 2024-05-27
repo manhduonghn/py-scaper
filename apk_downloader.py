@@ -24,7 +24,7 @@ def get_download_page(version: str) -> str:
     yt_apk_page = apkmirror_url
 
     for link in yt_links[1:]:
-        if link.find_all("span", attrs={"class": "apkm-badge"})[0].text == "arm64-v8a":
+        if link.find_all("div", attrs={"class": "apkm-badge"})[0].text == "arm64-v8a":
             yt_apk_page += link.find_all("a", attrs={"class": "accent_color"})[0]["href"]
             break
 
