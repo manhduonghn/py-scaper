@@ -1,3 +1,4 @@
+import logging
 import cloudscraper
 from bs4 import BeautifulSoup
 
@@ -56,19 +57,20 @@ def download_file_with_cloudscraper(url: str, filename: str):
             for chunk in response.iter_content(1024):
                 f.write(chunk)
         else:
-            print(f"Failed to download file from {url}")
+            logging.error(f"Failed to download file from {url}")
 
 # Ví dụ sử dụng:
 version = "18.45.43"
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 try:
     download_page_url = get_download_page(version)
     download_link = extract_download_link(download_page_url)
-    print(f"Download link for YouTube version {version}: {download_link}")
+    logging.info(f"Download link for YouTube version {version}: {download_link}")
 
     # Tên file để lưu
     filename = f"YouTube_v{version}.apk"
     # Thực hiện tải tệp
     download_file_with_cloudscraper(download_link, filename)
-    print(f"File downloaded successfully as {filename}")
+    logging.info(f"File downloaded successfully as {filename}")
 except Exception as e:
-    print(f"Error: {e}")
+    logging.erro(f"Error: {e}")
