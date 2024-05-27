@@ -15,71 +15,60 @@ def get_download_page(version: str) -> str:
         + f"-{version.replace('.', '-')}-release/"
     )
 
-    print(f"Fetching URL: {apkmirror_yt_url}")
     response = scraper.get(apkmirror_yt_url)
     response.raise_for_status()
 
     soup = BeautifulSoup(response.content, "html.parser")
-    print("HTML content of the page fetched successfully.")
-    
     yt_links = soup.find_all("div", attrs={"class": "table-row headerFont"})
-    for link in yt_links:
-        print(link.text.strip())
-    print(f"Found {len(yt_links)} links with class 'table-row headerFont'.")
-
     yt_apk_page = apkmirror_url
-    print(yt_apk_page.text.strip())
-    exit (0)
 
     for link in yt_links[1:]:
-        badges = link.find_all("span", attrs={"class": "apkm-badge"})
-        if not badges:
-            continue
-        print(f"Found badge: {badges[0].text.strip()}")
-        if badges[0].text.strip() == "APK":
-            accent_links = link.find_all("a", attrs={"class": "accent_color"})
-            if accent_links:
-                yt_apk_page += accent_links[0]["href"]
-                print(f"Found APK page URL: {yt_apk_page}")
-                break
+        if link.find_all("span", attrs={"class": "apkm-badge"})[0].text == "APK":
+            yt_apk_page += link.find_all("a", attrs={"class": "accent_color"})[0]["href"]
+            break
 
     return yt_apk_page
 
 def extract_download_link(page: str) -> str:
     apkmirror_url = "https://www.apkmirror.com"
 
-    print(f"Fetching download page URL: {page}")
     res = scraper.get(page)
     res.raise_for_status()
 
     soup = BeautifulSoup(res.content, "html.parser")
-    print("HTML content of the download page fetched successfully.")
-    
     apk_dl_page = soup.find_all("a", attrs={"class": "accent_bg"})
-    if not apk_dl_page:
-        raise Exception("No download link found on the download page.")
     apk_dl_page_url = apkmirror_url + apk_dl_page[0]["href"]
-    print(f"Found intermediate APK download page URL: {apk_dl_page_url}")
 
     res = scraper.get(apk_dl_page_url)
     res.raise_for_status()
 
     soup = BeautifulSoup(res.content, "html.parser")
-    print("HTML content of the intermediate download page fetched successfully.")
-    
     apk_page_details = soup.find_all("a", attrs={"rel": "nofollow"})
-    if not apk_page_details:
-        raise Exception("No APK download link found on the intermediate page.")
     apk_link = apkmirror_url + apk_page_details[0]["href"]
-    print(f"Found final APK download link: {apk_link}")
 
     return apk_link
 
+def download_file_with_cloudscraper(url: str, filename: str):
+    with open(filename, "wb") as f:
+        scraper = cloudscraper.create_scraper()
+        response = scraper.get(url, stream=True)
+        if response.status_code == 200:
+            for chunk in response.iter_content(1024):
+                f.write(chunk)
+        else:
+            print(f"Failed to download file from {url}")
+
 # Ví dụ sử dụng:
-version = "18.45.43"  # Thay đổi phiên bản YouTube tùy theo nhu cầu
+version = "18.45.43"
 try:
     download_page_url = get_download_page(version)
     download_link = extract_download_link(download_page_url)
     print(f"Download link for YouTube version {version}: {download_link}")
+
+    # Tên file để lưu
+    filename = f"YouTube_v{version}.apk"
+    # Thực hiện tải tệp
+    download_file_with_cloudscraper(download_link, filename)
+    print(f"File downloaded successfully as {filename}")
 except Exception as e:
     print(f"Error: {e}")
