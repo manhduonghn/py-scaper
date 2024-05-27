@@ -1,8 +1,10 @@
 import cloudscraper
 from bs4 import BeautifulSoup
 
-def fetch_urls(version, keywords):
-    # Tạo một scraper với headers
+def get_download_page(version: str) -> str:
+    
+    keywords = ["APK", "arm64-v8a", "nodpi"]
+    
     scraper = cloudscraper.create_scraper(
         browser={
             'custom': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -19,12 +21,12 @@ def fetch_urls(version, keywords):
     response.raise_for_status()
 
     soup = BeautifulSoup(response.content, "html.parser")
-    links = soup.find_all('a', class_='accent_color')
+    sub_links = soup.find_all('a', class_='accent_color')
 
     # Khởi tạo danh sách lưu các URL hợp lệ
-    valid_urls = []
+    sub_urls= []
 
-    for link in links:
+    for sub_link in sub_links:
         parent = link.find_parent('div', class_='table-cell')
         if parent:
             siblings = parent.find_next_siblings('div')
@@ -33,12 +35,12 @@ def fetch_urls(version, keywords):
 
             # Kiểm tra xem tất cả các từ khóa đều có trong texts không
             if all(any(keyword in text for text in texts) for keyword in keywords):
-                valid_urls.append(link['href'])
+                sub_urls.append(sub_link['href'])
 
-    return valid_urls
+    return apkmirror_url + sub_urls
 
 # Ví dụ sử dụng
 version = "7.02.51"
-keywords = ["APK", "arm64-v8a", "nodpi"]  # Tùy chỉnh các từ khóa bạn muốn tìm
-valid_urls = fetch_urls(version, keywords)
+# Tùy chỉnh các từ khóa bạn muốn tìm
+valid_urls = fetch_urls(version)
 print("Valid URLs:", valid_urls)
