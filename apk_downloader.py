@@ -23,6 +23,8 @@ def get_download_page(version: str) -> str:
     print("HTML content of the page fetched successfully.")
     
     yt_links = soup.find_all("div", attrs={"class": "table-row headerFont"})
+    print(f"yt_links")
+    exit 0
     print(f"Found {len(yt_links)} links with class 'table-row headerFont'.")
 
     yt_apk_page = apkmirror_url
