@@ -43,10 +43,10 @@ def extract_download_link(page: str) -> str:
 
     soup = BeautifulSoup(response.content, "html.parser")
     # Tìm liên kết đầu tiên có href chứa 'key='
-    link = soup.find('a', href=lambda href: href and 'key=' in href)
+    valid_url = soup.find('a', href=lambda href: href and 'key=' in href)
 
     # Lấy giá trị href nếu tìm thấy liên kết hợp lệ
-    valid_url = link['href'] if link else None
+    #valid_url = link['href'] if link else None
 
     return valid_url
 
