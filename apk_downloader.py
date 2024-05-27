@@ -24,7 +24,7 @@ def get_download_page(version: str) -> str:
     yt_apk_page = apkmirror_url
 
     for link in yt_links[1:]:
-        if link.find_all("div", attrs={"class": "apkm-badge"})[0].text == "APK":
+        if link.find_all("span", attrs={"class": "apkm-badge"})[0].text == "APK":
             yt_apk_page += link.find_all("a", attrs={"class": "accent_color"})[0]["href"]
             break
 
@@ -73,4 +73,4 @@ try:
     download_file_with_cloudscraper(download_link, filename)
     logging.info(f"File downloaded successfully as {filename}")
 except Exception as e:
-    logging.error(f"Error: {e}")
+    logging.erro(f"Error: {e}")
