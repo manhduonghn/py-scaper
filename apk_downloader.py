@@ -42,5 +42,5 @@ def get_download_page(version: str) -> str:
 # Ví dụ sử dụng
 version = "7.02.51"
 # Tùy chỉnh các từ khóa bạn muốn tìm
-valid_urls = fetch_urls(version)
+valid_urls = get_download_page(version)
 print("Valid URLs:", valid_urls)
