@@ -1,8 +1,10 @@
 import cloudscraper
 from bs4 import BeautifulSoup
 
+# Từ khóa cần kiểm tra trong văn bản
 keywords = ["APK", "armeabi-v7a", "nodpi"]
 
+# Tạo một scraper với thông tin trình duyệt tùy chỉnh
 scraper = cloudscraper.create_scraper(
     browser={
         'custom': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -10,62 +12,44 @@ scraper = cloudscraper.create_scraper(
 )
 
 def get_download_page(version: str) -> str:
+    base_url = "https://www.apkmirror.com"
+    yt_url = f"{base_url}/apk/google-inc/youtube-music/youtube-music-{version.replace('.', '-')}-release/"
 
-    apkmirror_url = "https://www.apkmirror.com"
-    apkmirror_yt_url = (
-        f"https://www.apkmirror.com/apk/google-inc/youtube-music/youtube-music"
-        + f"-{version.replace('.', '-')}-release/"
-    )
-
-    response = scraper.get(apkmirror_yt_url)
+    response = scraper.get(yt_url)
     response.raise_for_status()
-
     soup = BeautifulSoup(response.content, "html.parser")
-    sub_links = soup.find_all('a', class_='accent_color')
 
-    for sub_link in sub_links:
+    for sub_link in soup.find_all('a', class_='accent_color'):
         parent = sub_link.find_parent('div', class_='table-cell')
         if parent:
-            siblings = parent.find_next_siblings('div')
-            # Combine text from parent and siblings to check
-            texts = [parent.get_text(strip=True)] + [sibling.get_text(strip=True) for sibling in siblings]
-
-            # Check if all keywords are present in the combined texts
+            texts = [parent.get_text(strip=True)] + [sib.get_text(strip=True) for sib in parent.find_next_siblings('div')]
             if all(any(keyword in text for text in texts) for keyword in keywords):
-                return apkmirror_url + sub_link['href']
+                return base_url + sub_link['href']
 
     return None
 
 def extract_download_link(page: str) -> str:
-    apkmirror_url = "https://www.apkmirror.com"
+    base_url = "https://www.apkmirror.com"
 
     response = scraper.get(page)
     response.raise_for_status()
-
     soup = BeautifulSoup(response.content, "html.parser")
-    # Tìm liên kết đầu tiên có href chứa 'key='
-    link = soup.find('a', href=lambda href: href and 'key=' in href)
 
-    # Lấy giá trị href nếu tìm thấy liên kết hợp lệ
-    sub_url = link['href'] if link else None
+    download_button = soup.find('a', class_='downloadButton')
+    if download_button:
+        download_page_url = base_url + download_button['href']
+        response = scraper.get(download_page_url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.content, "html.parser")
 
-    download_page_url = apkmirror_url + sub_url
-    response = scraper.get(download_page_url)
-    response.raise_for_status()
+        link = soup.find('a', href=lambda href: href and 'key=' in href)
+        if link:
+            return base_url + link['href']
 
-    soup = BeautifulSoup(response.content, "html.parser")
-    # Tìm liên kết đầu tiên có href chứa 'key='
-    link = soup.find('a', href=lambda href: href and 'key=' in href)
+    return None
 
-    # Lấy giá trị href nếu tìm thấy liên kết hợp lệ
-    sub_url = link['href'] if link else None
-
-    final_url = apkmirror_url + sub_url
-    return final_url
-
-# Example usage
+# Ví dụ sử dụng
 version = "7.02.51"
-# Call the function and print the valid URL
 download_page = get_download_page(version)
 if download_page:
     download_link = extract_download_link(download_page)
