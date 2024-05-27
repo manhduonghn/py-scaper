@@ -27,7 +27,7 @@ def get_download_page(version: str) -> str:
     sub_urls= []
 
     for sub_link in sub_links:
-        parent = link.find_parent('div', class_='table-cell')
+        parent = sub_link.find_parent('div', class_='table-cell')
         if parent:
             siblings = parent.find_next_siblings('div')
             # Kết hợp nội dung của thẻ cha và các phần tử liền kề để kiểm tra
