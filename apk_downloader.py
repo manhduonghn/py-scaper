@@ -12,7 +12,7 @@ scraper = cloudscraper.create_scraper(
 def get_download_page(version: str) -> str:
     apkmirror_url = "https://www.apkmirror.com"
     apkmirror_yt_url = (
-        f"https://www.apkmirror.com/apk/google-inc/youtube/youtube"
+        f"https://www.apkmirror.com/apk/google-inc/youtube-music/youtube-music"
         + f"-{version.replace('.', '-')}-release/"
     )
 
@@ -60,7 +60,7 @@ def download_file_with_cloudscraper(url: str, filename: str):
             logging.error(f"Failed to download file from {url}")
 
 # Ví dụ sử dụng:
-version = "18.45.43"
+version = "7.02.51"
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 try:
     download_page_url = get_download_page(version)
