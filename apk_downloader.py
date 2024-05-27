@@ -73,4 +73,4 @@ try:
     download_file_with_cloudscraper(download_link, filename)
     logging.info(f"File downloaded successfully as {filename}")
 except Exception as e:
-    logging.erro(f"Error: {e}")
+    logging.error(f"Error: {e}")
