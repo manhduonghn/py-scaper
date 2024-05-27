@@ -42,7 +42,7 @@ def get_download_page(version: str) -> list:
 
     return download_page
 
-def extract_download_link(page: str) -> Optional[str]:
+def extract_download_link(page: str) -> [str]:
     response = scraper.get(page)
     response.raise_for_status()
 
