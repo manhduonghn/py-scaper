@@ -1,15 +1,15 @@
 import cloudscraper
 from bs4 import BeautifulSoup
 
+keywords = ["APK", "armeabi-v7a", "nodpi"]
+    
+scraper = cloudscraper.create_scraper(
+    browser={
+        'custom': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+)
+
 def get_download_page(version: str) -> list:
-    
-    keywords = ["APK", "armeabi-v7a", "nodpi"]
-    
-    scraper = cloudscraper.create_scraper(
-        browser={
-            'custom': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-    )
 
     apkmirror_url = "https://www.apkmirror.com"
     apkmirror_yt_url = (
