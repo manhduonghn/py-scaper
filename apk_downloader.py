@@ -46,4 +46,4 @@ def get_download_page(version: str) -> list:
 version = "7.02.51"
 # Call the function and print the valid URLs
 download_page = get_download_page(version)
-print("Valid URLs:", valid_urls)
+print("Valid URLs:", download_page)
