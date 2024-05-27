@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 
 def get_download_page(version: str) -> list:
     
-    keywords = ["APK", "arm64-v8a", "nodpi"]
+    keywords = ["APK", "armeabi-v7a", "nodpi"]
     
     scraper = cloudscraper.create_scraper(
         browser={
