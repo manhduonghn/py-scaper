@@ -42,8 +42,24 @@ def get_download_page(version: str) -> list:
 
     return download_page
 
+def extract_download_link(page: str) -> None:
+
+    response = scraper.get(page)
+    response.raise_for_status()
+
+    soup = BeautifulSoup(response.content, "html.parser")
+    # Tìm liên kết đầu tiên có href chứa 'key='
+    link = soup.find('a', href=lambda href: href and 'key=' in href)
+
+    # Lấy giá trị href nếu tìm thấy liên kết hợp lệ
+    valid_url = link['href'] if link else None
+
+    return valid_url
+
 # Example usage
 version = "7.02.51"
 # Call the function and print the valid URLs
 download_page = get_download_page(version)
-print("Valid URLs:", download_page)
+valid_url = extract_download_link(download_page)
+print("Valid URL:", valid_url)
+
