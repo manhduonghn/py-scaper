@@ -9,7 +9,7 @@ scraper = cloudscraper.create_scraper(
     }
 )
 
-def get_download_page(version: str) -> list:
+def get_download_page(version: str) -> str:
 
     apkmirror_url = "https://www.apkmirror.com"
     apkmirror_yt_url = (
@@ -23,9 +23,6 @@ def get_download_page(version: str) -> list:
     soup = BeautifulSoup(response.content, "html.parser")
     sub_links = soup.find_all('a', class_='accent_color')
 
-    # Initialize list to store valid URLs
-    sub_urls = []
-
     for sub_link in sub_links:
         parent = sub_link.find_parent('div', class_='table-cell')
         if parent:
@@ -35,12 +32,9 @@ def get_download_page(version: str) -> list:
 
             # Check if all keywords are present in the combined texts
             if all(any(keyword in text for text in texts) for keyword in keywords):
-                sub_urls.append(sub_link['href'])
+                return apkmirror_url + sub_link['href']
 
-    # Concatenate base URL with each sub URL
-    download_page = [apkmirror_url + sub_url for sub_url in sub_urls]
-
-    return download_page
+    return None
 
 def extract_download_link(page: str) -> str:
 
@@ -58,7 +52,10 @@ def extract_download_link(page: str) -> str:
 
 # Example usage
 version = "7.02.51"
-# Call the function and print the valid URLs
+# Call the function and print the valid URL
 download_page = get_download_page(version)
-valid_urls = [extract_download_link(page) for page in download_page]
-print("Valid URLs:", valid_urls)
+if download_page:
+    valid_url = extract_download_link(download_page)
+    print("Valid URL:", valid_url)
+else:
+    print("No valid download page found.")
