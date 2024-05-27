@@ -1,8 +1,10 @@
 import cloudscraper
 from bs4 import BeautifulSoup
 
+# Từ khóa cần kiểm tra trong văn bản
 keywords = ["APK", "armeabi-v7a", "nodpi"]
 
+# Tạo một scraper với thông tin trình duyệt tùy chỉnh
 scraper = cloudscraper.create_scraper(
     browser={
         'custom': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -41,9 +43,9 @@ def extract_download_link(page: str) -> str:
         soup = BeautifulSoup(response.content, "html.parser")
 
         # Sử dụng logic từ pup -p --charset utf-8 'a[rel="nofollow"] attr{href}'
-        sub = soup.select_one('a[rel="nofollow"]')['href']
+        link = soup.select_one('a[rel="nofollow"]')['href']
         if link:
-            return base_url + sub
+            return base_url + link
 
     return None
 
