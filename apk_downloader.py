@@ -1,5 +1,6 @@
 import cloudscraper
 from bs4 import BeautifulSoup
+from typing import Optional
 
 keywords = ["APK", "armeabi-v7a", "nodpi"]
     
@@ -42,7 +43,7 @@ def get_download_page(version: str) -> list:
 
     return download_page
 
-def extract_download_link(page: str) -> [str]:
+def extract_download_link(page: str) -> Optional[str]:
     response = scraper.get(page)
     response.raise_for_status()
 
