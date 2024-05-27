@@ -25,10 +25,11 @@ def get_download_page(version: str) -> str:
     yt_links = soup.find_all("div", attrs={"class": "table-row headerFont"})
     for link in yt_links:
         print(link.text.strip())
-        exit (0)
     print(f"Found {len(yt_links)} links with class 'table-row headerFont'.")
 
     yt_apk_page = apkmirror_url
+    print(yt_apk_page.text.strip())
+    exit (0)
 
     for link in yt_links[1:]:
         badges = link.find_all("span", attrs={"class": "apkm-badge"})
