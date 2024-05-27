@@ -58,6 +58,7 @@ def extract_download_link(page: str) -> Optional[str]:
 version = "7.02.51"
 # Call the function and print the valid URLs
 download_page = get_download_page(version)
+print("download_page")
 valid_url = extract_download_link(download_page)
 print("Valid URL:", valid_url)
 
