@@ -38,12 +38,12 @@ def get_download_page(version: str) -> list:
                 sub_urls.append(sub_link['href'])
 
     # Concatenate base URL with each sub URL
-    valid_urls = [apkmirror_url + sub_url for sub_url in sub_urls]
+    download_page = [apkmirror_url + sub_url for sub_url in sub_urls]
 
-    return valid_urls
+    return download_page
 
 # Example usage
 version = "7.02.51"
 # Call the function and print the valid URLs
-valid_urls = get_download_page(version)
+download_page = get_download_page(version)
 print("Valid URLs:", valid_urls)
