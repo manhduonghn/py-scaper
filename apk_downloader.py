@@ -2,7 +2,7 @@ import cloudscraper
 from bs4 import BeautifulSoup
 
 keywords = ["APK", "armeabi-v7a", "nodpi"]
-    
+
 scraper = cloudscraper.create_scraper(
     browser={
         'custom': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -24,7 +24,7 @@ def get_download_page(version: str) -> list:
     sub_links = soup.find_all('a', class_='accent_color')
 
     # Initialize list to store valid URLs
-    sub_urls = ""
+    sub_urls = []
 
     for sub_link in sub_links:
         parent = sub_link.find_parent('div', class_='table-cell')
@@ -42,7 +42,7 @@ def get_download_page(version: str) -> list:
 
     return download_page
 
-def extract_download_link(page: str) -> None:
+def extract_download_link(page: str) -> str:
 
     response = scraper.get(page)
     response.raise_for_status()
@@ -60,5 +60,5 @@ def extract_download_link(page: str) -> None:
 version = "7.02.51"
 # Call the function and print the valid URLs
 download_page = get_download_page(version)
-valid_url = extract_download_link(download_page)
-print("Valid URL:", valid_url)
+valid_urls = [extract_download_link(page) for page in download_page]
+print("Valid URLs:", valid_urls)
