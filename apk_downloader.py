@@ -24,6 +24,7 @@ def get_download_page(version: str) -> str:
         if parent:
             texts = [parent.get_text(strip=True)] + [sib.get_text(strip=True) for sib in parent.find_next_siblings('div')]
             if all(any(keyword in text for text in texts) for keyword in keywords):
+                sub_link['rel'] = 'nofollow'  # Thêm thuộc tính rel="nofollow"
                 return base_url + sub_link['href']
 
     return None
@@ -42,9 +43,10 @@ def extract_download_link(page: str) -> str:
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
 
-        link = soup.find('a', href=lambda href: href and 'key=' in href)
+        # Sử dụng logic từ pup -p --charset utf-8 'a[rel="nofollow"] attr{href}'
+        link = soup.select_one('a[rel="nofollow"]')['href']
         if link:
-            return base_url + link['href']
+            return base_url + link
 
     return None
 
