@@ -27,16 +27,17 @@ valid_urls = []
 for link in links:
     parent = link.find_parent('div', class_='table-cell')
     if parent:
-        siblings = parent.find_next_siblings('div')
-        if len(siblings) >= 3:
-            # In ra các phần tử liên quan để kiểm tra
-            print("Link text:", link.get_text(strip=True))
-            print("Sibling 1 text:", siblings[0].get_text(strip=True))
-            print("Sibling 2 text:", siblings[1].get_text(strip=True))
-            print("Sibling 3 text:", siblings[2].get_text(strip=True))
-            print("\n")
-
-            if 'APK' in parent.get_text(strip=True) and 'arm64-v8a' in siblings[0].get_text(strip=True) and 'nodpi' in siblings[2].get_text(strip=True):
+        # Tìm tất cả các thẻ <span> bên trong thẻ cha và kiểm tra xem có chứa "APK" không
+        spans = parent.find_all('span')
+        apk_found = any('APK' in span.get_text(strip=True) for span in spans)
+        
+        if apk_found:
+            siblings = parent.find_next_siblings('div')
+            # Kiểm tra các phần tử liền kề
+            arm64_v8a_found = any('arm64-v8a' in sibling.get_text(strip=True) for sibling in siblings)
+            nodpi_found = any('nodpi' in sibling.get_text(strip=True) for sibling in siblings)
+            
+            if arm64_v8a_found and nodpi_found:
                 valid_urls.append(link['href'])
 
 print("Valid URLs:", valid_urls)
