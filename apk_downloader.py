@@ -15,18 +15,18 @@ scraper = cloudscraper.create_scraper(
 
 def get_download_page(version: str) -> str:
     base_url = "https://www.apkmirror.com"
-    yt_url = f"{base_url}/apk/facebook-2/messenger/messenger-{version.replace('.', '-')}-release/"
+    url = f"{base_url}/apk/facebook-2/messenger/messenger-{version.replace('.', '-')}-release/"
 
-    response = scraper.get(yt_url)
+    response = scraper.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
-    for sub_link in soup.find_all('a', class_='accent_color'):
-        parent = sub_link.find_parent('div', class_='table-cell')
+    for href_content in soup.find_all('a', class_='accent_color'):
+        parent = href_content.find_parent('div', class_='table-cell')
         if parent:
-            texts = [parent.get_text(strip=True)] + [sib.get_text(strip=True) for sib in parent.find_next_siblings('div')]
-            if all(any(keyword in text for text in texts) for keyword in keywords):
-                return base_url + sub_link['href']
+            infos = [parent.get_text(strip=True)] + [sib.get_text(strip=True) for sib in parent.find_next_siblings('div')]
+            if all(any(keyword in info for info in infos) for keyword in keywords):
+                return base_url + href_content['href']
 
     return None
 
@@ -37,16 +37,16 @@ def extract_download_link(page: str) -> str:
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
-    download_button = soup.find('a', class_='downloadButton')
-    if download_button:
-        download_page_url = base_url + download_button['href']
+    href_content = soup.find('a', class_='downloadButton')
+    if href_content:
+        download_page_url = base_url + href_content['href']
         response = scraper.get(download_page_url)
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
 
-        link = soup.select_one('a[rel="nofollow"]')['href']
+        href_content = soup.select_one('a[rel="nofollow"]')['href']
         if link:
-            return base_url + link
+            return base_url + href_content
 
     return None
 
