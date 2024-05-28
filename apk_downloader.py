@@ -1,10 +1,11 @@
 import cloudscraper
+import logging
 from bs4 import BeautifulSoup
 
-keywords = ["APK", "universal", "nodpi"]
-base_url = "https://www.apkmirror.com"
+# Từ khóa cần kiểm tra trong văn bản
+keywords = ["APK", "arm64-v8a", "nodpi"]
 
-# Create a scraper with a custom user agent
+# Tạo một scraper với thông tin trình duyệt tùy chỉnh
 scraper = cloudscraper.create_scraper(
     browser={
         'custom': 'Mozilla/5.0'
@@ -12,60 +13,49 @@ scraper = cloudscraper.create_scraper(
 )
 
 def get_download_page(version: str) -> str:
-    """
-    Get the download page URL for a specific YouTube version.
-    """
-    yt_url = f"{base_url}/apk/google-inc/youtube/youtube-{version.replace('.', '-')}-release/"
+    base_url = "https://www.apkmirror.com"
+    yt_url = f"{base_url}/apk/facebook-2/messenger/messenger-{version.replace('.', '-')}-release/"
+
     response = scraper.get(yt_url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
-    # Iterate through all links with class 'accent_color'
-    for link in soup.find_all('a', class_='accent_color'):
-        parent_div = link.find_parent('div', class_='table-cell')
-        if not parent_div:
-            continue
-
-        texts = [parent_div.get_text(strip=True)] + \
-                [sibling.get_text(strip=True) for sibling in parent_div.find_next_siblings('div')]
-
-        # Check if all keywords are present in the texts
-        if all(any(keyword.lower() in text.lower() for text in texts) for keyword in keywords):
-            return f"{base_url}{link['href']}"
+    for sub_link in soup.find_all('a', class_='accent_color'):
+        parent = sub_link.find_parent('div', class_='table-cell')
+        if parent:
+            texts = [parent.get_text(strip=True)] + [sib.get_text(strip=True) for sib in parent.find_next_siblings('div')]
+            if all(any(keyword in text for text in texts) for keyword in keywords):
+                return base_url + sub_link['href']
 
     return None
 
-def extract_download_link(page_url: str) -> str:
-    """
-    Extract the actual download link from the download page.
-    """
-    response = scraper.get(page_url)
+def extract_download_link(page: str) -> str:
+    base_url = "https://www.apkmirror.com"
+
+    response = scraper.get(page)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
     download_button = soup.find('a', class_='downloadButton')
-    if not download_button:
-        raise Exception("Download button not found on the page")
+    if download_button:
+        download_page_url = base_url + download_button['href']
+        response = scraper.get(download_page_url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.content, "html.parser")
 
-    download_page_url = f"{base_url}{download_button['href']}"
-    response = scraper.get(download_page_url)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.content, "html.parser")
+        # Sử dụng logic từ pup -p --charset utf-8 'a[rel="nofollow"] attr{href}'
+        link = soup.select_one('a[rel="nofollow"]')['href']
+        if link:
+            return base_url + link
 
-    direct_link = soup.select_one('a[rel="nofollow"]')
-    if not direct_link:
-        raise Exception("No final download link found")
+    return None
 
-    return f"{base_url}{direct_link['href']}"
-
-# Example usage
-version = "17.03.35"
+# Ví dụ sử dụng
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+version = "458.0.0.54.108"
 download_page = get_download_page(version)
 if download_page:
-    try:
-        download_link = extract_download_link(download_page)
-        print(f"Download link: {download_link}")
-    except Exception as e:
-        print(f"Error: {e}")
+    download_link = extract_download_link(download_page)
+    print("Valid URL:", download_link)
 else:
-    print("No suitable download page found")
+    print("No valid download page found.")
