@@ -22,12 +22,9 @@ def get_download_page(version: str) -> str:
     soup = BeautifulSoup(response.content, "html.parser")
 
     for sub_link in soup.find_all('a', class_='accent_color'):
-        #print (sub_link)
         parent = sub_link.find_parent('div', class_='table-cell')
-        # print (parent)
         if parent:
             texts = [parent.get_text(strip=True)] + [sib.get_text(strip=True) for sib in parent.find_next_siblings('div')]
-            print (texts)
             if all(any(keyword in text for text in texts) for keyword in keywords):
                 return base_url + sub_link['href']
 
@@ -41,6 +38,7 @@ def extract_download_link(page: str) -> str:
     soup = BeautifulSoup(response.content, "html.parser")
 
     download_button = soup.find('a', class_='downloadButton')
+    print (download_button)
     if download_button:
         download_page_url = base_url + download_button['href']
         response = scraper.get(download_page_url)
