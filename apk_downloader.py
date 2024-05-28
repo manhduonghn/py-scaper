@@ -1,6 +1,7 @@
 import cloudscraper
 import logging
 from bs4 import BeautifulSoup
+import os
 
 # Từ khóa cần kiểm tra trong văn bản
 keywords = ["APK", "arm64-v8a", "nodpi"]
@@ -57,5 +58,11 @@ download_page = get_download_page(version)
 if download_page:
     download_link = extract_download_link(download_page)
     print("Valid URL:", download_link)
+    if download_link:
+        filename = download_link.split("/")[-1]
+        with open(filename, 'wb') as f:
+            response = scraper.get(download_link)
+            f.write(response.content)
+        print("File downloaded successfully as", filename)
 else:
     print("No valid download page found.")
