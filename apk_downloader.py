@@ -15,9 +15,9 @@ scraper = cloudscraper.create_scraper(
 
 def get_download_page(version: str) -> str:
     base_url = "https://www.apkmirror.com"
-    fb_url = f"{base_url}/apk/facebook-2/messenger/messenger-{version.replace('.', '-')}-release/"
+    url = f"{base_url}/apk/facebook-2/messenger/messenger-{version.replace('.', '-')}-release/"
 
-    response = scraper.get(fb_url)
+    response = scraper.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
