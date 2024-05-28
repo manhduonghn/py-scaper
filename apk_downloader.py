@@ -38,14 +38,12 @@ def extract_download_link(page: str) -> str:
     soup = BeautifulSoup(response.content, "html.parser")
 
     download_button = soup.find('a', class_='downloadButton')
-    print (download_button)
     if download_button:
         download_page_url = base_url + download_button['href']
         response = scraper.get(download_page_url)
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
 
-        # Sử dụng logic từ pup -p --charset utf-8 'a[rel="nofollow"] attr{href}'
         link = soup.select_one('a[rel="nofollow"]')['href']
         if link:
             return base_url + link
