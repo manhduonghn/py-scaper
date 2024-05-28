@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import os
 
 # Từ khóa cần kiểm tra trong văn bản
-keywords = ["APK", "arm64-v8a", "nodpi"]
+keywords = ["APK", "x86", "nodpi"]
 
 # Tạo một scraper với thông tin trình duyệt tùy chỉnh
 scraper = cloudscraper.create_scraper(
