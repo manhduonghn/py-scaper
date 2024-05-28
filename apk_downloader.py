@@ -1,4 +1,5 @@
 import cloudscraper
+import logging
 from bs4 import BeautifulSoup
 
 # Từ khóa cần kiểm tra trong văn bản
@@ -50,6 +51,7 @@ def extract_download_link(page: str) -> str:
     return None
 
 # Ví dụ sử dụng
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 version = "458.0.0.54.108"
 download_page = get_download_page(version)
 if download_page:
