@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import os
 
 # Từ khóa cần kiểm tra trong văn bản
-keywords = ["Facebook", "arm64-v8a", "nodpi"]
+keywords = ["APK", "arm64-v8a", "nodpi"]
 
 # Tạo một scraper với thông tin trình duyệt tùy chỉnh
 scraper = cloudscraper.create_scraper(
@@ -15,9 +15,9 @@ scraper = cloudscraper.create_scraper(
 
 def get_download_page(version: str) -> str:
     base_url = "https://www.apkmirror.com"
-    url = f"{base_url}/apk/facebook-2/messenger/messenger-{version.replace('.', '-')}-release/"
+    yt_url = f"{base_url}/apk/facebook-2/messenger/messenger-{version.replace('.', '-')}-release/"
 
-    response = scraper.get(url)
+    response = scraper.get(yt_url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
