@@ -24,10 +24,10 @@ def get_download_page(version: str) -> str:
     for sub_link in soup.find_all('a', class_='accent_color'):
         #print (sub_link)
         parent = sub_link.find_parent('div', class_='table-cell')
-        print (parent)
+        # print (parent)
         if parent:
             texts = [parent.get_text(strip=True)] + [sib.get_text(strip=True) for sib in parent.find_next_siblings('div')]
-            # print (texts)
+            print (texts)
             if all(any(keyword in text for text in texts) for keyword in keywords):
                 return base_url + sub_link['href']
 
