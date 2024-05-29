@@ -1,7 +1,8 @@
+import os
+import re
 import cloudscraper
 import logging
 from bs4 import BeautifulSoup
-import os
 
 # Từ khóa cần kiểm tra trong văn bản
 keywords = ["APK", "x86", "nodpi"]
