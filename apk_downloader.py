@@ -50,9 +50,28 @@ def extract_download_link(page: str) -> str:
 
     return None
 
+def get_latest_version():
+    url = f"https://www.apkmirror.com/uploads/?appcategory=messenger"
+
+    response = scraper.get(url)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.content, "html.parser")
+
+    app_rows = soup.find_all("div", class_="appRow")
+    version_pattern = re.compile(r'\d+(\.\d+)+')
+
+    latest_version = None
+    for row in app_rows:
+        version_text = row.find("h5", class_="appRowTitle").a.text.strip()
+        if "alpha" not in version_text.lower() and "beta" not in version_text.lower():
+            match = version_pattern.search(version_text)
+            if match:
+                latest_version = match.group()
+                break
+
 # Ví dụ sử dụng
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-version = "458.0.0.54.108"
+version = get_latest_version()
 download_page = get_download_page(version)
 if download_page:
     download_link = extract_download_link(download_page)
