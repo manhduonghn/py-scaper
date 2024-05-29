@@ -34,4 +34,4 @@ def get_latest_version():
     print("Phiên bản mới nhất không phải alpha hoặc beta là:", latest_version)
 
 
-get_latest_version
+get_latest_version()
