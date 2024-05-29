@@ -16,7 +16,7 @@ scraper = cloudscraper.create_scraper(
 base_url = "https://www.apkmirror.com"
 
 def get_download_page(version: str) -> str:
-    url = f"{base_url}/apk/google-inc/youtube-music/youtube-music{version.replace('.', '-')}-release/"
+    url = f"{base_url}/apk/google-inc/youtube-music/youtube-music-{version.replace('.', '-')}-release/"
 
     response = scraper.get(url)
     response.raise_for_status()
