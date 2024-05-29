@@ -5,7 +5,7 @@ import logging
 from bs4 import BeautifulSoup
 
 # Từ khóa cần kiểm tra trong văn bản
-keywords = ["APK"]
+keywords = ["APK" , "arm64-v8a", "nodpi"]
 
 # Tạo một scraper với thông tin trình duyệt tùy chỉnh
 scraper = cloudscraper.create_scraper(
@@ -13,10 +13,10 @@ scraper = cloudscraper.create_scraper(
         'custom': 'Mozilla/5.0'
     }
 )
+base_url = "https://www.apkmirror.com"
 
 def get_download_page(version: str) -> str:
-    base_url = "https://www.apkmirror.com"
-    url = f"{base_url}/apk/facebook-2/messenger/messenger-{version.replace('.', '-')}-release/"
+    url = f"{base_url}/apk/google-inc/youtube-music/youtube-music{version.replace('.', '-')}-release/"
 
     response = scraper.get(url)
     response.raise_for_status()
@@ -32,8 +32,6 @@ def get_download_page(version: str) -> str:
     return None
 
 def extract_download_link(page: str) -> str:
-    base_url = "https://www.apkmirror.com"
-
     response = scraper.get(page)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
@@ -52,7 +50,7 @@ def extract_download_link(page: str) -> str:
     return None
 
 def get_latest_version():
-    url = f"https://www.apkmirror.com/uploads/?appcategory=messenger"
+    url = f"{base_url}/uploads/?appcategory=youtube-music"
 
     response = scraper.get(url)
     response.raise_for_status()
