@@ -10,7 +10,7 @@ scraper = cloudscraper.create_scraper(
     }
 )
 
-url = f"https://www.apkmirror.com/uploads/?appcategory=youtube"
+url = f"https://www.apkmirror.com/uploads/?appcategory=youtube-music"
 
 response = scraper.get(url)
 response.raise_for_status()
