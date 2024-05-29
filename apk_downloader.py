@@ -3,9 +3,6 @@ import logging
 from bs4 import BeautifulSoup
 import os
 
-# Từ khóa cần kiểm tra trong văn bản
-keywords = ["APK", "x86", "nodpi"]
-
 # Tạo một scraper với thông tin trình duyệt tùy chỉnh
 scraper = cloudscraper.create_scraper(
     browser={
@@ -13,7 +10,7 @@ scraper = cloudscraper.create_scraper(
     }
 )
 
-url = f"https://www.apkmirror.com/uploads/?appcategory=messenger"
+url = f"https://www.apkmirror.com/uploads/?appcategory=youtube"
 
 response = scraper.get(url)
 response.raise_for_status()
