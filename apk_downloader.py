@@ -5,7 +5,7 @@ import logging
 from bs4 import BeautifulSoup
 
 # Từ khóa cần kiểm tra trong văn bản
-keywords = ["APK" , "arm64-v8a", "nodpi"]
+keywords = ["APK", "arm64-v8a", "nodpi"]
 
 # Tạo một scraper với thông tin trình duyệt tùy chỉnh
 scraper = cloudscraper.create_scraper(
@@ -16,7 +16,7 @@ scraper = cloudscraper.create_scraper(
 base_url = "https://www.apkmirror.com"
 
 def get_download_page(version: str) -> str:
-    url = f"{base_url}/apk/google-inc/youtube-music/youtube-music-{version.replace('.', '-')}-release/"
+    url = f"{base_url}/apk/x-corp/twitter/twitter-{version.replace('.', '-')}-release/"
 
     response = scraper.get(url)
     response.raise_for_status()
@@ -49,15 +49,15 @@ def extract_download_link(page: str) -> str:
 
     return None
 
-def get_latest_version():
-    url = f"{base_url}/uploads/?appcategory=youtube-music"
+def get_latest_version() -> str:
+    url = f"{base_url}/uploads/?appcategory=twitter"
 
     response = scraper.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
     app_rows = soup.find_all("div", class_="appRow")
-    version_pattern = re.compile(r'\d+(\.\d+)+')
+    version_pattern = re.compile(r'\d+(\.\d+)*(-[a-zA-Z0-9]+(\.\d+)*)*')
 
     for row in app_rows:
         version_text = row.find("h5", class_="appRowTitle").a.text.strip()
