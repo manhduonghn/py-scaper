@@ -30,7 +30,8 @@ def get_download_page(version: str) -> str:
             post_download_divs = soup.find_all("div", class_="post-download")
             for div in post_download_divs:
                 data_url = div["data-url"]
-                logging.debug("Data URL: %s", data_url)
+                full_url = "https://dw.uptodown.com/dwn/" + data_url
+                logging.debug("Data URL: %s", full_url)
             return
 
     logging.debug("Không tìm thấy trang tải xuống cho phiên bản %s", version)
