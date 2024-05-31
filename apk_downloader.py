@@ -17,10 +17,10 @@ def get_download_link(version: str) -> str:
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
-    version_div = soup.find("div", {"data-url": f"/download/youtube-music-{version}"})
+    version_div = soup.find("div", {"data-version": version})
     if version_div:
-        dl_page = version_div["data-url"]
-        dl_url = dl_page.replace('/download/', '/post-download/')
+        dl_link = version_div.find("a", class_="download-btn")["href"]
+        dl_url = dl_link.replace('/download/', '/post-download/')
         response = scraper.get(dl_url)
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
