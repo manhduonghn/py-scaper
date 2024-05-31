@@ -43,47 +43,15 @@ def get_download_link(version: str) -> str:
 def get_latest_version():
     url = "https://youtube-music.en.uptodown.com/android/versions"
     
-    # Fetch the content from the URL
     response = scraper.get(url)
     response.raise_for_status()
     
-    # Parse the HTML content using Beautiful Soup
     soup = BeautifulSoup(response.content, "html.parser")
     
-    # Select all the version spans within the versions list
     version_spans = soup.select('#versions-items-list .version')
+    highest_version = sorted(version_spans, reverse=True)[0]
     
-    # Log the found version spans
-    logging.debug(f"Found version spans: {version_spans}")
-    
-    # Extract the version text and convert it to a tuple of integers for comparison
-    versions = []
-    for span in version_spans:
-        version_text = span.text.strip()
-        logging.debug(f"Found version text: {version_text}")
-        try:
-            version_tuple = tuple(map(int, version_text.split('.')))
-            versions.append(version_tuple)
-        except ValueError as e:
-            logging.error(f"Error parsing version text '{version_text}': {e}")
-    
-    if not versions:
-        logging.error("No versions found.")
-        return None
-    
-    # Log the parsed version tuples
-    logging.debug(f"Parsed version tuples: {versions}")
-    
-    # Find the maximum version tuple
-    highest_version = max(versions)
-    
-    # Log the highest version tuple
-    logging.debug(f"Highest version tuple: {highest_version}")
-    
-    # Convert the highest version tuple back to a string
-    highest_version_str = '.'.join(map(str, highest_version))
-    
-    return highest_version_str
+    return highest_version
 
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
