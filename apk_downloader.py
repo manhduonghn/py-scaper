@@ -35,6 +35,38 @@ def get_download_link(version: str) -> str:
 
     return None
 
+import requests
+from bs4 import BeautifulSoup
+
+def get_latest_version():
+    url = "https://youtube-music.en.uptodown.com/android/versions"
+    
+    # Fetch the content from the URL
+    response = requests.get(url)
+    response.raise_for_status()
+    
+    # Parse the HTML content using Beautiful Soup
+    soup = BeautifulSoup(response.content, "html.parser")
+    
+    # Select all the version spans within the versions list
+    version_spans = soup.select('#versions-items-list .version')
+    
+    # Extract the version text and convert it to a tuple of integers for comparison
+    versions = []
+    for span in version_spans:
+        version_text = span.text.strip()
+        version_tuple = tuple(map(int, version_text.split('.')))
+        versions.append(version_tuple)
+    
+    # Find the maximum version tuple
+    highest_version = max(versions)
+    
+    # Convert the highest version tuple back to a string
+    highest_version_str = '.'.join(map(str, highest_version))
+    
+    return highest_version_str
+
+
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
 
@@ -55,7 +87,7 @@ def download_resource(url: str, name: str) -> str:
 
     return filepath
     
-version = "7.03.51"
+version = get_latest_version()
 download_link = get_download_link(version)
 file_name = f"youtube-music-v{version}.apk"
 download_resource(download_link,file_name)
