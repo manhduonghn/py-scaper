@@ -25,7 +25,7 @@ def get_download_link(version: str) -> str:
 
     for div in divs:
         version_span = div.find("span", class_="version")
-        if version_span and version_span.text.strip() == version:
+        if version_span and version_span.text == version:
             dl_page = div["data-url"]
             dl_url = dl_page.replace('/download/', '/post-download/')
             response = scraper.get(dl_url)
@@ -53,17 +53,13 @@ def get_latest_version():
     # Select all the version spans within the versions list
     version_spans = soup.select('#versions-items-list .version')
     
-    # Extract the version text and convert it to a tuple of integers for comparison
-    versions = []
-    for span in version_spans:
-        version_text = span.text.strip()
-        version_tuple = tuple(map(int, version_text.split('.')))
-        versions.append((version_tuple, version_text))
+    # Extract the version text
+    versions = [span.text for span in version_spans]
     
-    # Find the maximum version tuple
-    highest_version_tuple, highest_version_str = max(versions)
+    # Find the highest version
+    highest_version = max(versions)
     
-    return highest_version_str
+    return highest_version
 
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
