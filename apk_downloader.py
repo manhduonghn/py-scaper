@@ -1,5 +1,3 @@
-import os
-import re
 import cloudscraper
 import logging
 from bs4 import BeautifulSoup
@@ -26,18 +24,16 @@ def get_download_page(version: str) -> str:
         if version_span and version_span.text.strip() == version:
             dl_page = div["data-url"]
             dl_url = dl_page.replace('/download/', '/post-download/')
-            return dl_url
+            response = scraper.get(dl_url)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.content, "html.parser")
+            post_download_divs = soup.find_all("div", class_="post-download")
+            for div in post_download_divs:
+                data_url = div["data-url"]
+                logging.debug("Data URL: %s", data_url)
+            return
 
-    response = scraper.get(dl_url)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.content, "html.parser")
-    
-    post_download_divs = soup.find_all("div", class_="post-download")
-    for div in post_download_divs:
-        data_url = div["data-url"]
-        print("Data URL:", data_url)
-
-    return None
+    logging.debug("Không tìm thấy trang tải xuống cho phiên bản %s", version)
 
 version = "19.20.32"
 get_download_page(version)
