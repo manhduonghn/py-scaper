@@ -27,9 +27,8 @@ def get_download_page(version: str) -> str:
         version_span = div.find("span", class_="version")
         if version_span and version_span.text.strip() == version:
             data_url = div["data-url"]
-            logging.debug("Data URL của phiên bản %s là: %s", version, data_url)
-            # Thay thế '/download/' bằng '/post-download/'
             data_url = data_url.replace('/download/', '/post-download/')
+            logging.debug("Data URL của phiên bản %s là: %s", version, data_url)
             return data_url
 
     # Nếu không tìm thấy data-url, trả về None
