@@ -3,7 +3,7 @@ import cloudscraper
 from bs4 import BeautifulSoup
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 # Create a CloudScraper instance
 scraper = cloudscraper.create_scraper(
