@@ -2,8 +2,10 @@ import logging
 import cloudscraper
 from bs4 import BeautifulSoup
 
+# Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
+# Create a CloudScraper instance
 scraper = cloudscraper.create_scraper(
     browser={
         'custom': 'Mozilla/5.0'
@@ -11,12 +13,14 @@ scraper = cloudscraper.create_scraper(
 )
 
 def get_download_link(version: str) -> str:
-    url = f"https://youtube-music.en.uptodown.com/android/versions"
+    url = "https://youtube-music.en.uptodown.com/android/versions"
 
+    # Fetch the content from the URL
     response = scraper.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
+    # Find all divs with data-url attribute
     divs = soup.find_all("div", {"data-url": True})
 
     for div in divs:
@@ -28,10 +32,11 @@ def get_download_link(version: str) -> str:
             response.raise_for_status()
             soup = BeautifulSoup(response.content, "html.parser")
             post_download_divs = soup.find_all("div", class_="post-download")
-            for div in post_download_divs:
-                data_url = div["data-url"]
-                full_url = "https://dw.uptodown.com/dwn/" + data_url
-                return full_url
+            for post_div in post_download_divs:
+                data_url = post_div.get("data-url")
+                if data_url:
+                    full_url = "https://dw.uptodown.com/dwn/" + data_url
+                    return full_url
 
     return None
 
@@ -63,7 +68,6 @@ def get_latest_version():
     
     return highest_version_str
 
-
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
 
@@ -83,8 +87,14 @@ def download_resource(url: str, name: str) -> str:
         )
 
     return filepath
-    
-version = get_latest_version()
-download_link = get_download_link(version)
-file_name = f"youtube-music-v{version}.apk"
-download_resource(download_link,file_name)
+
+try:
+    version = get_latest_version()
+    download_link = get_download_link(version)
+    if download_link:
+        file_name = f"youtube-music-v{version}.apk"
+        download_resource(download_link, file_name)
+    else:
+        logging.error("Failed to find the download link.")
+except Exception as e:
+    logging.error(f"An error occurred: {e}")
