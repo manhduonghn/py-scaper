@@ -35,13 +35,27 @@ def get_download_link(version: str) -> str:
 
     return None
 
+def download_resource(url: str, name: str) -> str:
+    filepath = f"./{name}"
+
+    with scraper.get(url, stream=True) as res:
+        res.raise_for_status()
+
+        total_size = int(res.headers.get('content-length', 0))
+        downloaded_size = 0
+
+        with open(filepath, "wb") as file:
+            for chunk in res.iter_content(chunk_size=8192):
+                file.write(chunk)
+                downloaded_size += len(chunk)
+
+        logging.info(
+            f"URL: {url} [{downloaded_size}/{total_size}] -> {name}"
+        )
+
+    return filepath
+    
 version = "7.03.51"
 download_link = get_download_link(version)
-
-if download_link:
-    filename = f"youtube-music-v{version}.apk"
-    response = scraper.get(download_link)
-    with open(filename, 'wb') as f:
-        f.write(response.content)
-else:
-    print("Không thể tải xuống file cho phiên bản", version)
+file_name = f"youtube-music-v{version}.apk"
+download_resource(download_link,file_name)
