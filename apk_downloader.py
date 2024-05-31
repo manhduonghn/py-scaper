@@ -11,28 +11,31 @@ scraper = cloudscraper.create_scraper(
 )
 
 def get_download_link(version: str) -> str:
-    url = f"https://youtube.en.uptodown.com/android/versions"
+    url = f"https://youtube-music.en.uptodown.com/android/versions"
 
     response = scraper.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
-    version_div = soup.find("div", {"data-version": version})
-    if version_div:
-        dl_link = version_div.find("a", class_="download-btn")["href"]
-        dl_url = dl_link.replace('/download/', '/post-download/')
-        response = scraper.get(dl_url)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.content, "html.parser")
-        post_download_div = soup.find("div", class_="post-download")
-        if post_download_div:
-            data_url = post_download_div["data-url"]
-            full_url = "https://dw.uptodown.com/dwn/" + data_url
-            return full_url
+    divs = soup.find_all("div", {"data-url": True})
+
+    for div in divs:
+        version_span = div.find("span", class_="version")
+        if version_span and version_span.text.strip() == version:
+            dl_page = div["data-url"]
+            dl_url = dl_page.replace('/download/', '/post-download/')
+            response = scraper.get(dl_url)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.content, "html.parser")
+            post_download_divs = soup.find_all("div", class_="post-download")
+            for div in post_download_divs:
+                data_url = div["data-url"]
+                full_url = "https://dw.uptodown.com/dwn/" + data_url
+                return full_url
 
     return None
 
-version = "19.20.32"
+version = "7.03.51"
 download_link = get_download_link(version)
 
 if download_link:
