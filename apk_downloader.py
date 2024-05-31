@@ -51,14 +51,22 @@ def get_latest_version():
     soup = BeautifulSoup(response.content, "html.parser")
     
     # Select all the version spans within the versions list
-    version_spans = soup.select('#versions-items-list .version')
+    version_spans = soup.select('#versions-items-list div[data-url] .version')
+    
+    # Log the found version spans
+    logging.debug(f"Found version spans: {version_spans}")
     
     # Extract the version text and convert it to a tuple of integers for comparison
     versions = []
     for span in version_spans:
         version_text = span.text.strip()
+        logging.debug(f"Found version text: {version_text}")
         version_tuple = tuple(map(int, version_text.split('.')))
         versions.append(version_tuple)
+    
+    if not versions:
+        logging.error("No versions found.")
+        return None
     
     # Find the maximum version tuple
     highest_version = max(versions)
@@ -90,11 +98,14 @@ def download_resource(url: str, name: str) -> str:
 
 try:
     version = get_latest_version()
-    download_link = get_download_link(version)
-    if download_link:
-        file_name = f"youtube-music-v{version}.apk"
-        download_resource(download_link, file_name)
+    if version:
+        download_link = get_download_link(version)
+        if download_link:
+            file_name = f"youtube-music-v{version}.apk"
+            download_resource(download_link, file_name)
+        else:
+            logging.error("Failed to find the download link.")
     else:
-        logging.error("Failed to find the download link.")
+        logging.error("Failed to find the latest version.")
 except Exception as e:
     logging.error(f"An error occurred: {e}")
