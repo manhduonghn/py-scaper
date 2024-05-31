@@ -1,5 +1,5 @@
+import logging 
 import cloudscraper
-import logging
 from bs4 import BeautifulSoup
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -10,7 +10,7 @@ scraper = cloudscraper.create_scraper(
     }
 )
 
-def get_download_page(version: str) -> str:
+def get_download_link(version: str) -> str:
     url = f"https://youtube.en.uptodown.com/android/versions"
 
     response = scraper.get(url)
@@ -31,10 +31,17 @@ def get_download_page(version: str) -> str:
             for div in post_download_divs:
                 data_url = div["data-url"]
                 full_url = "https://dw.uptodown.com/dwn/" + data_url
-                logging.debug("Data URL: %s", full_url)
-            return
+                return full_url
 
-    logging.debug("Không tìm thấy trang tải xuống cho phiên bản %s", version)
+    return None
 
 version = "19.20.32"
-get_download_page(version)
+download_link = get_download_link(version)
+
+if download_link:
+    filename = f"youtube-music-v{version}.apk"
+    response = scraper.get(download_link)
+    with open(filename, 'wb') as f:
+        f.write(response.content)
+else:
+    print("Không thể tải xuống file cho phiên bản", version)
