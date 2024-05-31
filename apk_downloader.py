@@ -35,14 +35,11 @@ def get_download_link(version: str) -> str:
 
     return None
 
-import requests
-from bs4 import BeautifulSoup
-
 def get_latest_version():
     url = "https://youtube-music.en.uptodown.com/android/versions"
     
     # Fetch the content from the URL
-    response = requests.get(url)
+    response = scraper.get(url)
     response.raise_for_status()
     
     # Parse the HTML content using Beautiful Soup
