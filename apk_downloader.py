@@ -10,6 +10,22 @@ scraper = cloudscraper.create_scraper(
     }
 )
 
+def get_latest_version() -> str:
+    url = "https://apkpure.net/youtube/com.google.android.youtube/version"
+
+    response = scraper.get(url)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.content, "html.parser")
+    version_info = soup.find('div', class_='ver-top-down')
+
+    if version_info:
+        version = version_info['data-dt-version']
+        logging.info(f"Version found: {version}")
+        return version
+    else:
+        logging.error("Version information not found.")
+        return None
+
 def get_download_link(version: str) -> str:
     url = f"https://apkpure.net/youtube/com.google.android.youtube/download/{version}"
 
@@ -20,10 +36,12 @@ def get_download_link(version: str) -> str:
     download_link = download_btn['href'] if download_btn else None
     
     if download_link:
-        return download_link
+        logging.info(f"Download link found: {download_link}")
+    else:
+        logging.error("Download link not found.")
+        return None
     
-    return None
-
+    return download_link
 
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
@@ -45,11 +63,14 @@ def download_resource(url: str, name: str) -> str:
 
     return filepath
 
-version = "19.21.37"
-download_link = get_download_link(version)
+version = get_latest_version()
 
-if download_link:
-    file_name = f"youtube-v{version}.apk"
-    download_resource(download_link, file_name)
+if version:
+    download_link = get_download_link(version)
+    if download_link:
+        file_name = f"youtube-v{version}.apk"
+        download_resource(download_link, file_name)
+    else:
+        logging.error("Failed to obtain download link.")
 else:
-    logging.error("Failed to obtain download link.")
+    logging.error("Failed to obtain version information.")
