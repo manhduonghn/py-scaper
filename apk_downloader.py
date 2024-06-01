@@ -58,7 +58,7 @@ def download_resource(url: str, name: str) -> str:
 
     return filepath
 
-version = get_latest_version()
+version = "10.42.0-release.0"
 
 if version:
     download_link = get_download_link(version)
