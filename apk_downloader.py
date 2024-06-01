@@ -11,7 +11,7 @@ scraper = cloudscraper.create_scraper(
 )
 
 def get_latest_version() -> str:
-    url = "https://apkpure.net/youtube/com.google.android.youtube/versions"
+    url = "https://apkpure.net/x/com.twitter.android/versions"
 
     response = scraper.get(url)
     response.raise_for_status()
@@ -27,7 +27,7 @@ def get_latest_version() -> str:
         return None
 
 def get_download_link(version: str) -> str:
-    url = f"https://apkpure.net/youtube/com.google.android.youtube/download/{version}"
+    url = f"https://apkpure.net/youtube/x/com.twitter.android/download/{version}"
 
     response = scraper.get(url)
     response.raise_for_status()
@@ -68,7 +68,7 @@ version = get_latest_version()
 if version:
     download_link = get_download_link(version)
     if download_link:
-        file_name = f"youtube-v{version}.apk"
+        file_name = f"x-v{version}.apk"
         download_resource(download_link, file_name)
     else:
         logging.error("Failed to obtain download link.")
