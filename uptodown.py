@@ -34,8 +34,6 @@ def get_download_link(version: str) -> str:
                     full_url = "https://dw.uptodown.com/dwn/" + data_url
                     return full_url
 
-    logging.info(f"URL: {full_url}")
-
     return None
 
 def get_latest_version():
@@ -75,5 +73,6 @@ def download_resource(url: str, name: str) -> str:
 
 version = get_latest_version()
 download_link = get_download_link(version)
+logging.info(f"Final URL: {download_link}")
 file_name = f"youtube-music-v{version}.apk"
 download_resource(download_link, file_name)
