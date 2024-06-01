@@ -11,44 +11,19 @@ scraper = cloudscraper.create_scraper(
 )
 
 def get_download_link(version: str) -> str:
-    url = "https://reddit-official-app.en.uptodown.com/android/versions"
+    url = f"https://apkpure.net/youtube/com.google.android.youtube/download/{version}"
 
     response = scraper.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
-
-    divs = soup.find_all("div", {"data-url": True})
-
-    for div in divs:
-        version_span = div.find("span", class_="version")
-        if version_span and version_span.text == version:
-            dl_page = div["data-url"]
-            dl_url = dl_page.replace('/download/', '/post-download/')
-            response = scraper.get(dl_url)
-            response.raise_for_status()
-            soup = BeautifulSoup(response.content, "html.parser")
-            post_download_divs = soup.find_all("div", class_="post-download")
-            for post_div in post_download_divs:
-                data_url = post_div.get("data-url")
-                if data_url:
-                    full_url = "https://dw.uptodown.com/dwn/" + data_url
-                    return full_url
-
+    download_btn = soup.find('a', class_='download-btn')
+    download_link = download_btn['href'] if download_btn else None
+    
+    if download_link:
+        return download_link
+    
     return None
 
-def get_latest_version():
-    url = "https://reddit-official-app.en.uptodown.com/android/versions"
-    
-    response = scraper.get(url)
-    response.raise_for_status()
-    
-    soup = BeautifulSoup(response.content, "html.parser")
-    
-    version_spans = soup.select('#versions-items-list .version')
-    versions = [span.text for span in version_spans]
-    highest_version = max(versions)
-    
-    return highest_version
 
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
@@ -70,8 +45,11 @@ def download_resource(url: str, name: str) -> str:
 
     return filepath
 
-
-version = get_latest_version()
+version = "19.21.37"
 download_link = get_download_link(version)
-file_name = f"reddit-v{version}.apk"
-download_resource(download_link, file_name)
+
+if download_link:
+    file_name = f"youtube-v{version}.apk"
+    download_resource(download_link, file_name)
+else:
+    logging.error("Failed to obtain download link.")
