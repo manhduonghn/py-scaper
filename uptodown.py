@@ -34,6 +34,8 @@ def get_download_link(version: str) -> str:
                     full_url = "https://dw.uptodown.com/dwn/" + data_url
                     return full_url
 
+    logging.info(full_url)
+
     return None
 
 def get_latest_version():
