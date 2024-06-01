@@ -59,13 +59,7 @@ def download_resource(url: str, name: str) -> str:
     return filepath
 
 version = get_latest_version()
-
-if version:
-    download_link = get_download_link(version)
-    if download_link:
-        file_name = f"x-v{version}.apk"
-        download_resource(download_link, file_name)
-    else:
-        logging.error("Failed to obtain download link.")
-else:
-    logging.error("Failed to obtain version information.")
+download_link = get_download_link(version)
+file_name = f"x-v{version}.apk"
+download_resource(download_link, file_name)
+    
