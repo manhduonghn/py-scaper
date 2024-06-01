@@ -11,7 +11,7 @@ scraper = cloudscraper.create_scraper(
 )
 
 def get_download_link(version: str) -> str:
-    url = "https://youtube.en.uptodown.com/android/versions"
+    url = "https://reddit-official-app.en.uptodown.com/android/versions"
 
     response = scraper.get(url)
     response.raise_for_status()
@@ -37,7 +37,7 @@ def get_download_link(version: str) -> str:
     return None
 
 def get_latest_version():
-    url = "https://youtube.en.uptodown.com/android/versions"
+    url = "https://reddit-official-app.en.uptodown.com/android/versions"
     
     response = scraper.get(url)
     response.raise_for_status()
@@ -73,5 +73,5 @@ def download_resource(url: str, name: str) -> str:
 
 version = get_latest_version()
 download_link = get_download_link(version)
-file_name = f"youtube-v{version}.apk"
+file_name = f"reddit-v{version}.apk"
 download_resource(download_link, file_name)
