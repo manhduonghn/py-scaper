@@ -20,11 +20,9 @@ def get_latest_version() -> str:
 
     if version_info:
         version = version_info['data-dt-version']
-        logging.info(f"Version found: {version}")
-        return version
-    else:
-        logging.error("Version information not found.")
-        return None
+        if version:
+            return version
+    return None
 
 def get_download_link(version: str) -> str:
     url = f"https://apkpure.net/x/com.twitter.android/download/{version}"
