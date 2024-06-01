@@ -1,20 +1,15 @@
-name: Build Revanced Apps
+name: Py Scraper 
 on:
   push:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
 jobs:
-  build-apps:
-    name: Build Apps
+  scraper:
+    name: Py Scraper 
     permissions: write-all
     runs-on: ubuntu-latest
     timeout-minutes: 3
-    env:
-      GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-      GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@main
@@ -30,7 +25,10 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Build Revanced 
-        run: python apk_downloader.py
+        run: | 
+          python apkmirror.py
+          python apkpure.py
+          python uptodown.py
 
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
