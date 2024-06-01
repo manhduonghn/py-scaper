@@ -93,4 +93,4 @@ version = get_latest_version()
 download_page = get_download_page(version)
 download_link = extract_download_link(download_page)
 filename = f"twitter-v{version}.apk"
-download_resource(download_link,file_name)           
+download_resource(download_link, filename)           
