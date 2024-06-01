@@ -11,7 +11,7 @@ scraper = cloudscraper.create_scraper(
 )
 
 def get_latest_version() -> str:
-    url = "https://apkpure.net/youtube/com.google.android.youtube/version"
+    url = "https://apkpure.net/youtube/com.google.android.youtube/versions"
 
     response = scraper.get(url)
     response.raise_for_status()
