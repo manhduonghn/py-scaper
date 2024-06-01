@@ -27,7 +27,7 @@ def get_latest_version() -> str:
         return None
 
 def get_download_link(version: str) -> str:
-    url = f"https://apkpure.net/youtube/x/com.twitter.android/download/{version}"
+    url = f"https://apkpure.net/x/com.twitter.android/download/{version}"
 
     response = scraper.get(url)
     response.raise_for_status()
