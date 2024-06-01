@@ -31,7 +31,7 @@ def get_download_link(version: str) -> str:
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
     download_btn = soup.find('a', class_='download-btn')
-    download_link = download_btn['href'] if download_btn else None
+    download_btn['href'] if (download_btn and "/APK/" in download_btn.get('href', '')) else None
     
     if download_link:
         logging.info(f"Download link found: {download_link}")
