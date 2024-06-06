@@ -4,7 +4,7 @@ import logging
 from bs4 import BeautifulSoup
 
 # Keywords to check in the text
-criteria = ["APK", "nodpi"]
+criteria = ["bundle"]
 
 # Create a scraper with custom browser information
 scraper = cloudscraper.create_scraper(
