@@ -4,7 +4,7 @@ import logging
 from bs4 import BeautifulSoup
 
 # Keywords to check in the text
-criteria = ["APK", "arm64-v8a", "nodpi"]
+criteria = ["APK", "nodpi"]
 
 # Create a scraper with custom browser information
 scraper = cloudscraper.create_scraper(
@@ -15,7 +15,7 @@ scraper = cloudscraper.create_scraper(
 base_url = "https://www.apkmirror.com"
 
 def get_download_page(version: str) -> str:
-    url = f"{base_url}/apk/facebook-2/messenger/messenger-{version.replace('.', '-')}-release/"
+    url = f"{base_url}/apk/x-corp/twitter/twitter-{version.replace('.', '-')}-release/"
 
     response = scraper.get(url)
     response.raise_for_status()
@@ -49,7 +49,7 @@ def extract_download_link(page: str) -> str:
     return None
 
 def get_latest_version() -> str:
-    url = f"{base_url}/uploads/?appcategory=messenger"
+    url = f"{base_url}/uploads/?appcategory=twitter"
 
     response = scraper.get(url)
     response.raise_for_status()
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         if not download_link:
             raise Exception("Failed to extract the download link.")
         
-        filename = f"messenger-v{version}.apk"
+        filename = f"twitter-v{version}.apk"
         download_resource(download_link, filename)
         logging.info(f"Downloaded file saved as {filename}")
     
