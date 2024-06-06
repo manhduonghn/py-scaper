@@ -5,7 +5,7 @@ import logging
 from bs4 import BeautifulSoup
 
 # Từ khóa cần kiểm tra trong văn bản
-keywords = ["APK", "universal", "nodpi"]
+criteria = ["APK", "universal", "nodpi"]
 
 # Tạo một scraper với thông tin trình duyệt tùy chỉnh
 scraper = cloudscraper.create_scraper(
@@ -22,13 +22,12 @@ def get_download_page(version: str) -> str:
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
-    for href_content in soup.find_all('a', class_='accent_color'):
-        parent = href_content.find_parent('div', class_='table-cell')
-        if parent:
-            infos = [parent.get_text(strip=True)] + [sib.get_text(strip=True) for sib in parent.find_next_siblings('div')]
-            if all(any(keyword in info for info in infos) for keyword in keywords):
-                return base_url + href_content['href']
-
+    rows = soup.find_all('div', class_='table-cell rowheight addseparator expand pad dowrap')
+    for row in rows:
+        if all(criterion in row.text for criterion in criteria):
+            link_tag = row.find_previous('a', class_='accent_color')
+            if link_tag:
+                return base_url + link_tag['href']
     return None
 
 def extract_download_link(page: str) -> str:
