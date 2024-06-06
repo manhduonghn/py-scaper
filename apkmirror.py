@@ -44,7 +44,7 @@ def extract_download_link(page: str) -> str:
 
         href_content = soup.select_one('a[rel="nofollow"]')
         if href_content:
-            return href_content['href']
+            return base_url +  href_content['href']
 
     return None
 
