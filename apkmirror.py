@@ -4,10 +4,10 @@ import cloudscraper
 import logging
 from bs4 import BeautifulSoup
 
-# Từ khóa cần kiểm tra trong văn bản
+# Keywords to check in the text
 criteria = ["APK", "universal", "nodpi"]
 
-# Tạo một scraper với thông tin trình duyệt tùy chỉnh
+# Create a scraper with custom browser information
 scraper = cloudscraper.create_scraper(
     browser={
         'custom': 'Mozilla/5.0'
@@ -42,9 +42,9 @@ def extract_download_link(page: str) -> str:
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
 
-        href_content = soup.select_one('a[rel="nofollow"]')['href']
+        href_content = soup.select_one('a[rel="nofollow"]')
         if href_content:
-            return base_url + href_content
+            return base_url + href_content['href']
 
     return None
 
@@ -86,10 +86,26 @@ def download_resource(url: str, name: str) -> str:
         )
 
     return filepath
-  
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-version = get_latest_version()
-download_page = get_download_page(version)
-download_link = extract_download_link(download_page)
-filename = f"twitter-v{version}.apk"
-download_resource(download_link, filename)           
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    
+    try:
+        version = get_latest_version()
+        if not version:
+            raise Exception("Failed to find the latest version.")
+        
+        download_page = get_download_page(version)
+        if not download_page:
+            raise Exception("Failed to find the download page.")
+        
+        download_link = extract_download_link(download_page)
+        if not download_link:
+            raise Exception("Failed to extract the download link.")
+        
+        filename = f"twitter-v{version}.apk"
+        download_resource(download_link, filename)
+        logging.info(f"Downloaded file saved as {filename}")
+    
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
