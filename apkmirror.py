@@ -1,11 +1,10 @@
-import os
 import re
 import cloudscraper
 import logging
 from bs4 import BeautifulSoup
 
 # Keywords to check in the text
-criteria = ["APK", "universal", "nodpi"]
+criteria = ["APK", "arm64-v8a", "nodpi"]
 
 # Create a scraper with custom browser information
 scraper = cloudscraper.create_scraper(
@@ -16,16 +15,17 @@ scraper = cloudscraper.create_scraper(
 base_url = "https://www.apkmirror.com"
 
 def get_download_page(version: str) -> str:
-    url = f"{base_url}/apk/x-corp/twitter/twitter-{version.replace('.', '-')}-release/"
+    url = f"{base_url}/apk/facebook-2/messenger/messenger-{version.replace('.', '-')}-release/"
 
     response = scraper.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
-    rows = soup.find_all('div', class_='table-cell rowheight addseparator expand pad dowrap')
+    rows = soup.find_all('div', class_='table-row headerFont')
     for row in rows:
-        if all(criterion in row.text for criterion in criteria):
-            link_tag = row.find_previous('a', class_='accent_color')
+        row_text = row.get_text()
+        if all(criterion in row_text for criterion in criteria):
+            link_tag = row.find('a', class_='accent_color')
             if link_tag:
                 return base_url + link_tag['href']
     return None
@@ -44,12 +44,12 @@ def extract_download_link(page: str) -> str:
 
         href_content = soup.select_one('a[rel="nofollow"]')
         if href_content:
-            return base_url + href_content['href']
+            return href_content['href']
 
     return None
 
 def get_latest_version() -> str:
-    url = f"{base_url}/uploads/?appcategory=twitter"
+    url = f"{base_url}/uploads/?appcategory=messenger"
 
     response = scraper.get(url)
     response.raise_for_status()
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         if not download_link:
             raise Exception("Failed to extract the download link.")
         
-        filename = f"twitter-v{version}.apk"
+        filename = f"messenger-v{version}.apk"
         download_resource(download_link, filename)
         logging.info(f"Downloaded file saved as {filename}")
     
