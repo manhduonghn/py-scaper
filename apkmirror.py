@@ -25,9 +25,9 @@ def get_download_page(version: str) -> str:
     for row in rows:
         row_text = row.get_text()
         if all(criterion in row_text for criterion in criteria):
-            link_tag = row.find('a', class_='accent_color')
-            if link_tag:
-                return base_url + link_tag['href']
+            sub_url = row.find('a', class_='accent_color')
+            if sub_url:
+                return base_url + sub_url['href']
     return None
 
 def extract_download_link(page: str) -> str:
@@ -35,16 +35,16 @@ def extract_download_link(page: str) -> str:
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
-    href_content = soup.find('a', class_='downloadButton')
-    if href_content:
-        download_page_url = base_url + href_content['href']
+    sub_url = soup.find('a', class_='downloadButton')
+    if sub_url:
+        download_page_url = base_url + sub_url['href']
         response = scraper.get(download_page_url)
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
 
-        href_content = soup.select_one('a[rel="nofollow"]')
-        if href_content:
-            return base_url +  href_content['href']
+        sub_url = soup.select_one('a[rel="nofollow"]')
+        if sub_url:
+            return base_url +  sub_url['href']
 
     return None
 
