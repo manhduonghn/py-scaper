@@ -77,10 +77,10 @@ def download_resource(url: str, name: str) -> str:
             for chunk in res.iter_content(chunk_size=8192):
                 file.write(chunk)
                 downloaded_size += len(chunk)
-                # Optionally, print progress
-                logger.info(f"Downloaded {downloaded_size} of {total_size} bytes", end='\r')
-
-        logger.success(f"URL: {final_url} [{downloaded_size}/{total_size}] -> {name}")
+                
+        logger.success(
+            f"URL: {final_url} [{downloaded_size}/{total_size}] -> {name}"
+        )
 
     return filepath
 
