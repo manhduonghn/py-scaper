@@ -96,10 +96,10 @@ def download_resource(url: str, name: str) -> str:
 
     return filepath
 
-name = 'youtube'
-version = get_latest_version(name)
-download_page = get_download_page(version, name) 
-download_link = extract_download_link(name)
-filename = f"{name}-v{version}.apk"
+app_name = 'youtube'
+version = get_latest_version(app_name)
+download_page = get_download_page(version, app_name) 
+download_link = extract_download_link(app_name)
+filename = f"{app_name}-v{version}.apk"
 download_resource(download_link, filename)
 logging.info(f"Downloaded file saved as {filename}")
