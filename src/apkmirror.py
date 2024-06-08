@@ -2,9 +2,9 @@ import re
 import json
 import logging
 import cloudscraper
+
 from bs4 import BeautifulSoup
 from loguru import logger 
-
 
 base_url = "https://www.apkmirror.com"
 scraper = cloudscraper.create_scraper()
@@ -94,7 +94,7 @@ def download_resource(url: str, name: str) -> str:
                 file.write(chunk)
                 downloaded_size += len(chunk)
 
-        logger.info(
+        logger.success(
             f"URL: {url} [{downloaded_size}/{total_size}] -> {name}"
         )
 
@@ -106,4 +106,4 @@ def download_apkmirror(app_name: str) -> str:
     download_link = extract_download_link(download_page)
     filename = f"{app_name}-v{version}.apk"
     download_resource(download_link, filename)
-    logger.info(f"Downloaded file saved as {filename}")
+    logger.success(f"Downloaded file saved as {filename}")
