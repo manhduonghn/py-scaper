@@ -31,11 +31,11 @@ def get_download_link(version: str) -> str:
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
-    all_href = soup.find_all('a')
-    all_links = [link['href'] for link in all_href if '/APK/' in link.get('href', '')]
-    download_link = all_links[0] if all_links else None
-
-    return download_link
+    download_link = soup.find('a', href=lambda href: href and '/APK/' in href)
+    if download_link:
+        return download_link
+    
+    return None
 
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
