@@ -14,8 +14,8 @@ scraper = cloudscraper.create_scraper(
 )
 base_url = "https://www.apkmirror.com"
 
-def get_download_page(version: str) -> str:
-    url = f"{base_url}/apk/x-corp/twitter/twitter-{version.replace('.', '-')}-release/"
+def get_download_page(org: str,name: str,version: str) -> str:
+    url = f"{base_url}/apk/{org}/{name}/{name}-{version.replace('.', '-')}-release/"
 
     response = scraper.get(url)
     response.raise_for_status()
@@ -48,8 +48,8 @@ def extract_download_link(page: str) -> str:
 
     return None
 
-def get_latest_version() -> str:
-    url = f"{base_url}/uploads/?appcategory=twitter"
+def get_latest_version(name: str,) -> str:
+    url = f"{base_url}/uploads/?appcategory={name}"
 
     response = scraper.get(url)
     response.raise_for_status()
@@ -87,25 +87,13 @@ def download_resource(url: str, name: str) -> str:
 
     return filepath
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+org = 'x-corp'
+name = "twitter'
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+version = get_latest_version(name)        
+download_page = get_download_page(org, name, version) 
+download_link = extract_download_link(download_page)
+filename = f"{name}-v{version}.apk"
+download_resource(download_link, filename)
+logging.info(f"Downloaded file saved as {filename}")
     
-    try:
-        version = get_latest_version()
-        if not version:
-            raise Exception("Failed to find the latest version.")
-        
-        download_page = get_download_page(version)
-        if not download_page:
-            raise Exception("Failed to find the download page.")
-        
-        download_link = extract_download_link(download_page)
-        if not download_link:
-            raise Exception("Failed to extract the download link.")
-        
-        filename = f"twitter-v{version}.apk"
-        download_resource(download_link, filename)
-        logging.info(f"Downloaded file saved as {filename}")
-    
-    except Exception as e:
-        logging.error(f"An error occurred: {e}")
