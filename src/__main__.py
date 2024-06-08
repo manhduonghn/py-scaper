@@ -4,7 +4,7 @@ import json
 import logging
 from src import downloader
 
-downloader.download_apkmirror("reddit")
+apk = downloader.download_apkmirror("reddit")
 downloader.download_apkmirror("x")
 downloader.download_apkmirror("tiktok")
 downloader.download_apkmirror("youtube")
