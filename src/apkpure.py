@@ -1,6 +1,6 @@
 import json
 import logging
-
+import cloudscraper 
 from bs4 import BeautifulSoup
 
 scraper = cloudscraper.create_scraper()
