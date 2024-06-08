@@ -86,6 +86,7 @@ def download_resource(url: str, name: str) -> str:
     with scraper.get(url, stream=True) as res:
         res.raise_for_status()
 
+        final_url = res.url  # Get the final URL after any redirects
         total_size = int(res.headers.get('content-length', 0))
         downloaded_size = 0
 
@@ -93,13 +94,13 @@ def download_resource(url: str, name: str) -> str:
             for chunk in res.iter_content(chunk_size=8192):
                 file.write(chunk)
                 downloaded_size += len(chunk)
-
+                
         logger.success(
-            f"URL: {url} [{downloaded_size}/{total_size}] -> {name}"
+            f"URL: {final_url} [{downloaded_size}/{total_size}] -> {name}"
         )
 
     return filepath
-
+    
 def download_apkmirror(app_name: str) -> str:
     version = get_latest_version(app_name)
     download_page = get_download_page(version, app_name) 
