@@ -25,7 +25,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Scraper 
-        run: python -m src
+        run: python ./src/apkmirror.py
         
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
