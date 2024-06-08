@@ -88,7 +88,7 @@ def download_resource(url: str, name: str) -> str:
     return filepath
 
 org = 'x-corp'
-name = "twitter'
+name = 'twitter'
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 version = get_latest_version(name)        
 download_page = get_download_page(org, name, version) 
