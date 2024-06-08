@@ -3,5 +3,6 @@ from src.apkpure import download_apkpure
 from src.uptodown import download_uptodown
 
 download_apkpure('youtube')
+download_apkpure('youtube-music')
 download_uptodown('youtube')
 download_apkmirror('youtube')
