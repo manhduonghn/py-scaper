@@ -89,4 +89,3 @@ def download_uptodown(app_name: str) -> str:
     download_resource(download_link, filename)
     logging.info(f"Downloaded file saved as {filename}")
 
-download_uptodown('youtube')
