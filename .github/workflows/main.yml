@@ -27,6 +27,8 @@ jobs:
       - name: Build Revanced 
         run: | 
           python apkmirror.py
+          python apkpure.py
+          python uptodown.py
 
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
