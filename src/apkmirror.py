@@ -75,6 +75,7 @@ def get_latest_version(app_name: str) -> str:
 
     return None
 
+
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
 
@@ -95,36 +96,10 @@ def download_resource(url: str, name: str) -> str:
 
     return filepath
 
-def download_apkmirror(app_name: str) -> str:
-    try:
-        conf_file_path = f'./apps/apkmirror/{app_name}.json'
-        with open(conf_file_path, 'r') as json_file:
-            config = json.load(json_file)
-
-        version = config['version']
-        type = config['type']
-
-        if type == 'BUNDLE':
-            ext = 'apkm'
-        elif type == 'APK':
-            ext = 'apk'
-        else:
-            ext = 'apk'
-
-        if not version:
-            version = get_latest_version(app_name)
-
-        download_page = get_download_page(version, app_name)
-        if download_page:
-            download_link = extract_download_link(download_page)
-            if download_link:
-                filename = f"{app_name}-v{version}.{ext}"
-                return download_resource(download_link, filename)
-
-    except Exception as e:
-        logging.error(f"An error occurred: {e}")
-
-    return None
-
-
-download_apkmirror('youtube')
+name = 'youtube'
+version = get_latest_version(name)
+download_page = get_download_page(name) 
+download_link = extract_download_link(name)
+filename = f"{name}-v{version}.apk"
+download_resource(download_link, filename)
+logging.info(f"Downloaded file saved as {filename}")
