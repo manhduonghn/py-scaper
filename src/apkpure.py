@@ -2,7 +2,6 @@ import json
 import logging
 import cloudscraper 
 from bs4 import BeautifulSoup
-from loguru import logger 
 
 scraper = cloudscraper.create_scraper()
 scraper.headers.update(
@@ -21,6 +20,7 @@ def get_latest_version(app_name: str) -> str:
 
     response = scraper.get(url)
     response.raise_for_status()
+    logging.info(f"URL: {response.url} -> -")
     soup = BeautifulSoup(response.content, "html.parser")
     version_info = soup.find('div', class_='ver-top-down')
 
@@ -40,6 +40,7 @@ def get_download_link(version: str, app_name: str) ->str:
 
     response = scraper.get(url)
     response.raise_for_status()
+    logging.info(f"URL: {response.url} -> -")
     soup = BeautifulSoup(response.content, "html.parser")
     download_link = soup.find(
         'a', href=lambda href: href and f"/APK/{config['package']}" in href
@@ -55,7 +56,7 @@ def download_resource(url: str, name: str) -> str:
     with scraper.get(url, stream=True) as res:
         res.raise_for_status()
 
-        final_url = res.url  # Get the final URL after any redirects
+        final_url = res.url
         total_size = int(res.headers.get('content-length', 0))
         downloaded_size = 0
 
@@ -64,7 +65,7 @@ def download_resource(url: str, name: str) -> str:
                 file.write(chunk)
                 downloaded_size += len(chunk)
                 
-        logger.success(
+        logging.info(
             f"URL: {final_url} [{downloaded_size}/{total_size}] -> {name}"
         )
 
