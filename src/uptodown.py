@@ -77,7 +77,7 @@ def download_resource(url: str, name: str) -> str:
                 file.write(chunk)
                 downloaded_size += len(chunk)
 
-        logger.info(
+        logger.success(
             f"URL: {url} [{downloaded_size}/{total_size}] -> {name}"
         )
 
@@ -88,5 +88,3 @@ def download_uptodown(app_name: str) -> str:
     download_link = get_download_link(version, app_name)
     filename = f"{app_name}-v{version}.apk"
     download_resource(download_link, filename)
-    logger.info(f"Downloaded file saved as {filename}")
-
