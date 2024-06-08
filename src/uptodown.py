@@ -66,10 +66,7 @@ def get_latest_version(app_name: str) -> str:
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
 
-    # Create directory if it doesn't exist
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
-
-    with requests.get(url, stream=True) as res:
+    with scraper.get(url, stream=True) as res:
         res.raise_for_status()
 
         final_url = res.url  # Get the final URL after any redirects
