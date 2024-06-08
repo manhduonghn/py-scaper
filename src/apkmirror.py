@@ -1,8 +1,15 @@
 import re
 import json
-
+import logging
+import cloudscraper
 from bs4 import BeautifulSoup
-from src import base_url, scraper
+
+
+base_url = "https://www.apkmirror.com"
+scraper = cloudscraper.create_scraper()
+scraper.headers.update(
+    {'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'}
+)
 
 def get_download_page(version: str, app_name: str) -> str:
     
@@ -67,3 +74,52 @@ def get_latest_version(app_name: str) -> str:
                 return match.group()
 
     return None
+
+def download_resource(url: str, name: str) -> str:
+    filepath = f"./{name}"
+
+    with scraper.get(url, stream=True) as res:
+        res.raise_for_status()
+
+        total_size = int(res.headers.get('content-length', 0))
+        downloaded_size = 0
+
+        with open(filepath, "wb") as file:
+            for chunk in res.iter_content(chunk_size=8192):
+                file.write(chunk)
+                downloaded_size += len(chunk)
+
+        logging.info(
+            f"URL: {url} [{downloaded_size}/{total_size}] -> {name}"
+        )
+
+    return filepath
+
+def download_apkmirror(app_name: str) -> str:
+
+    try:
+        conf_file_path = f'./apps/apkmirror/{app_name}.json'
+        version = config['version']
+        type = config['type']
+
+        if type == 'BUNDLE':
+            ext = 'apkm'
+        elif type == 'APK':
+            ext = 'apk'
+        else:
+            ext = 'apk'
+
+        if not version:
+            version = apkmirror.get_latest_version(app_name)
+
+        download_page = apkmirror.get_download_page(version, app_name)
+        download_link = apkmirror.extract_download_link(download_page)
+
+        filename = f"{app_name}-v{version}.apk"
+        
+        return download_resource(download_link, filename)
+    except Exception as e:
+        return None
+
+
+download_apkmirror('youtube')
