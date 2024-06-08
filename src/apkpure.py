@@ -2,6 +2,7 @@ import json
 import logging
 import cloudscraper 
 from bs4 import BeautifulSoup
+from loguru import logger 
 
 scraper = cloudscraper.create_scraper()
 scraper.headers.update(
@@ -62,7 +63,7 @@ def download_resource(url: str, name: str) -> str:
                 file.write(chunk)
                 downloaded_size += len(chunk)
 
-        logging.info(
+        logger.info(
             f"URL: {url} [{downloaded_size}/{total_size}] -> {name}"
         )
 
@@ -73,5 +74,5 @@ def download_apkpure(app_name: str) -> str:
     download_link = get_download_link(version, app_name)
     filename = f"{app_name}-v{version}.apk"
     download_resource(download_link, filename)
-    logging.info(f"Downloaded file saved as {filename}")
+    logger.info(f"Downloaded file saved as {filename}")
 
