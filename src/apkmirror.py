@@ -1,3 +1,4 @@
+import os
 import re
 import json
 import logging
@@ -6,17 +7,19 @@ import cloudscraper
 from bs4 import BeautifulSoup
 from loguru import logger 
 
+# Configuration
 base_url = "https://www.apkmirror.com"
 scraper = cloudscraper.create_scraper()
 scraper.headers.update(
     {'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'}
 )
+
+# Logging setup
 logging.basicConfig(
   level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
 )
 
 def get_download_page(version: str, app_name: str) -> str:
-    
     conf_file_path = f'./apps/apkmirror/{app_name}.json'   
     with open(conf_file_path, 'r') as json_file:
         config = json.load(json_file)
@@ -26,6 +29,7 @@ def get_download_page(version: str, app_name: str) -> str:
            f"{config['name']}-{version.replace('.', '-')}-release/")
     response = scraper.get(url)
     response.raise_for_status()
+    logger.info(f"Accessed URL: {response.url}")
     soup = BeautifulSoup(response.content, "html.parser")
 
     rows = soup.find_all('div', class_='table-row headerFont')
@@ -40,6 +44,7 @@ def get_download_page(version: str, app_name: str) -> str:
 def extract_download_link(page: str) -> str:
     response = scraper.get(page)
     response.raise_for_status()
+    logger.info(f"Accessed URL: {response.url}")
     soup = BeautifulSoup(response.content, "html.parser")
 
     sub_url = soup.find('a', class_='downloadButton')
@@ -47,16 +52,16 @@ def extract_download_link(page: str) -> str:
         download_page_url = base_url + sub_url['href']
         response = scraper.get(download_page_url)
         response.raise_for_status()
+        logger.info(f"Accessed URL: {response.url}")
         soup = BeautifulSoup(response.content, "html.parser")
 
         sub_url = soup.select_one('a[rel="nofollow"]')
         if sub_url:
-            return base_url +  sub_url['href']
+            return base_url + sub_url['href']
 
     return None
 
 def get_latest_version(app_name: str) -> str:
-    
     conf_file_path = f'./apps/apkmirror/{app_name}.json'    
     with open(conf_file_path, 'r') as json_file:
         config = json.load(json_file)
@@ -65,6 +70,7 @@ def get_latest_version(app_name: str) -> str:
 
     response = scraper.get(url)
     response.raise_for_status()
+    logger.info(f"Accessed URL: {response.url}")
     soup = BeautifulSoup(response.content, "html.parser")
 
     app_rows = soup.find_all("div", class_="appRow")
@@ -78,7 +84,6 @@ def get_latest_version(app_name: str) -> str:
                 return match.group()
 
     return None
-
 
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
@@ -106,4 +111,4 @@ def download_apkmirror(app_name: str) -> str:
     download_page = get_download_page(version, app_name) 
     download_link = extract_download_link(download_page)
     filename = f"{app_name}-v{version}.apk"
-    download_resource(download_link, filename)
+    return download_resource(download_link, filename)
