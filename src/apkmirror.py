@@ -106,4 +106,3 @@ def download_apkmirror(app_name: str) -> str:
     download_link = extract_download_link(download_page)
     filename = f"{app_name}-v{version}.apk"
     download_resource(download_link, filename)
-    logger.success(f"Downloaded file saved as {filename}")
