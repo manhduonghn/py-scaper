@@ -32,7 +32,7 @@ def get_download_link(version: str) -> str:
     soup = BeautifulSoup(response.content, "html.parser")
 
     download_link = soup.find(
-        'a', href=lambda href: href and '/APK/' in href
+        'a', href=lambda href: href and '/APK/com.google.android.apps.youtube.music' in href
     )
     if download_link:
         return download_link['href']
