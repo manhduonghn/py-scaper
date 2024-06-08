@@ -99,7 +99,7 @@ def download_resource(url: str, name: str) -> str:
 
     return filepath
 
-download_apkmirror(app_name):
+def download_apkmirror(app_name: str) -> str:
     version = get_latest_version(app_name)
     download_page = get_download_page(version, app_name) 
     download_link = extract_download_link(download_page)
