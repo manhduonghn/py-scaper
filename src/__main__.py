@@ -2,7 +2,7 @@ import os
 import logging
 from src import downloader
 
-def run_build(app_name: str) -> str:
+def run_build(app_name: str, source: str) -> str:
     if source == "apkmirror":
         return downloader.download_apkmirror(app_name)
     elif source == "apkpure":
@@ -14,4 +14,4 @@ def run_build(app_name: str) -> str:
         return None
 
 if __name__ == "__main__":
-    apk_filepath = run_build("youtube")
+    apk_filepath = run_build("youtube", "apkmirror")
