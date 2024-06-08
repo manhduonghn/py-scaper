@@ -24,7 +24,7 @@ def get_latest_version() -> str:
             return version
     return None
 
-def get_download_link(version: str) -> str:
+def get_download_link(app_name: str, package: str, version: str) -> str:
     url = f"https://apkpure.net/{app_name}/{package}/download/{version}"
 
     response = scraper.get(url)
@@ -62,7 +62,7 @@ def download_resource(url: str, name: str) -> str:
 version = get_latest_version()
 app_name = 'youtube-music'
 package = 'com.google.android.apps.youtube.music'
-download_link = get_download_link(version)
-file_name = f"x-v{version}.apk"
+download_link = get_download_link(app_name, package, version)
+file_name = f"{app_name}-v{version}.apk"
 download_resource(download_link, file_name)
     
