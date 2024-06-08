@@ -27,16 +27,16 @@ def get_latest_version() -> str:
 def get_download_link(version: str) -> str:
     url = f"https://apkpure.net/youtube-music/com.google.android.apps.youtube.music/download/{version}"
 
-    response = scraper.get(url)
+    response = requests.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
-    download_btn = soup.find('a', class_='download-btn')
-    download_link = download_btn['href'] if download_btn else None
-    
-    if download_link:
-        return download_link
-    
-    return None 
+
+    all_links = soup.find_all('a')
+    apk_links = [link['href'] for link in all_links if '/APK/' in link.get('href', '')]
+
+    download_link = apk_links[0] if apk_links else None
+
+    return download_link
 
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
