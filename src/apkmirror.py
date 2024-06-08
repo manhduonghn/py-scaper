@@ -106,5 +106,3 @@ def download_apkmirror(app_name: str) -> str:
     filename = f"{app_name}-v{version}.apk"
     download_resource(download_link, filename)
     logging.info(f"Downloaded file saved as {filename}")
-
-download_apkmirror('youtube')
