@@ -98,7 +98,7 @@ def download_resource(url: str, name: str) -> str:
 
 name = 'youtube'
 version = get_latest_version(name)
-download_page = get_download_page(name) 
+download_page = get_download_page(version, name) 
 download_link = extract_download_link(name)
 filename = f"{name}-v{version}.apk"
 download_resource(download_link, filename)
