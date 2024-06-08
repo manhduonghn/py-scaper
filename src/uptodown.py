@@ -3,14 +3,13 @@ import logging
 import cloudscraper 
 
 from bs4 import BeautifulSoup
-from loguru import logger 
 
 scraper = cloudscraper.create_scraper()
 scraper.headers.update(
     {'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'}
 )
 logging.basicConfig(
-  level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
+  level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
 )
 
 def get_download_link(version: str, app_name: str) ->str:
@@ -23,6 +22,7 @@ def get_download_link(version: str, app_name: str) ->str:
 
     response = scraper.get(url)
     response.raise_for_status()
+    logging.info(f"URL: {response.url} -> -")
     soup = BeautifulSoup(response.content, "html.parser")
 
     divs = soup.find_all("div", {"data-url": True})
@@ -34,6 +34,7 @@ def get_download_link(version: str, app_name: str) ->str:
             dl_url = dl_page.replace('/download/', '/post-download/')
             response = scraper.get(dl_url)
             response.raise_for_status()
+            logging.info(f"URL: {response.url} -> -")
             soup = BeautifulSoup(response.content, "html.parser")
             post_download_divs = soup.find_all("div", class_="post-download")
             for post_div in post_download_divs:
@@ -54,9 +55,9 @@ def get_latest_version(app_name: str) -> str:
     
     response = scraper.get(url)
     response.raise_for_status()
+    logging.info(f"URL: {response.url} -> -")
     
-    soup = BeautifulSoup(response.content, "html.parser")
-    
+    soup = BeautifulSoup(response.content, "html.parser") 
     version_spans = soup.select('#versions-items-list .version')
     versions = [span.text for span in version_spans]
     highest_version = max(versions)
@@ -78,7 +79,7 @@ def download_resource(url: str, name: str) -> str:
                 file.write(chunk)
                 downloaded_size += len(chunk)
                 
-        logger.success(
+        logging.info(
             f"URL: {final_url} [{downloaded_size}/{total_size}] -> {name}"
         )
 
