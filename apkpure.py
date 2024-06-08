@@ -33,7 +33,7 @@ def get_download_link(version: str) -> str:
 
     download_link = soup.find('a', href=lambda href: href and '/APK/' in href)
     if download_link:
-        return download_link
+        return download_link['href']
     
     return None
 
