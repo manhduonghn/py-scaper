@@ -27,7 +27,7 @@ def get_latest_version() -> str:
 def get_download_link(version: str) -> str:
     url = f"https://apkpure.net/youtube-music/com.google.android.apps.youtube.music/download/{version}"
 
-    response = requests.get(url)
+    response = scraper.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
 
