@@ -13,8 +13,12 @@ scraper.headers.update(
     {'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'}
 )
 logging.basicConfig(
-  level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
+    level=logging.INFO, format='%(asctime)s URL:%(message)s [1]', datefmt='%Y-%m-%d %H:%M:%S'
 )
+
+def log_response(response, name):
+    content_size = len(response.content)
+    logging.info(f"{response.url} [{content_size}/{content_size}] -> \"{name}\"")
 
 def get_download_page(version: str, app_name: str) -> str:
     conf_file_path = f'./apps/apkmirror/{app_name}.json'   
@@ -26,7 +30,7 @@ def get_download_page(version: str, app_name: str) -> str:
            f"{config['name']}-{version.replace('.', '-')}-release/")
     response = scraper.get(url)
     response.raise_for_status()
-    logging.info(f"URL: {response.url} -> -")
+    log_response(response, "-")
     soup = BeautifulSoup(response.content, "html.parser")
 
     rows = soup.find_all('div', class_='table-row headerFont')
@@ -41,7 +45,7 @@ def get_download_page(version: str, app_name: str) -> str:
 def extract_download_link(page: str) -> str:
     response = scraper.get(page)
     response.raise_for_status()
-    logging.info(f"URL: {response.url} -> -")
+    log_response(response, "-")
     soup = BeautifulSoup(response.content, "html.parser")
 
     sub_url = soup.find('a', class_='downloadButton')
@@ -49,7 +53,7 @@ def extract_download_link(page: str) -> str:
         download_page_url = base_url + sub_url['href']
         response = scraper.get(download_page_url)
         response.raise_for_status()
-        logging.info(f"URL: {response.url} -> -")
+        log_response(response, "-")
         soup = BeautifulSoup(response.content, "html.parser")
 
         sub_url = soup.select_one('a[rel="nofollow"]')
@@ -67,7 +71,7 @@ def get_latest_version(app_name: str) -> str:
 
     response = scraper.get(url)
     response.raise_for_status()
-    logging.info(f"URL: {response.url} -> -")
+    log_response(response, "-")
     soup = BeautifulSoup(response.content, "html.parser")
 
     app_rows = soup.find_all("div", class_="appRow")
@@ -98,7 +102,7 @@ def download_resource(url: str, name: str) -> str:
                 downloaded_size += len(chunk)
                 
         logging.info(
-            f"URL: {final_url} [{downloaded_size}/{total_size}] -> {name}"
+            f"{final_url} [{downloaded_size}/{total_size}] -> \"{name}\""
         )
 
     return filepath
