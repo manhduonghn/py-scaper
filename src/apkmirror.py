@@ -54,7 +54,9 @@ def extract_download_link(page: str) -> str:
         download_page_url = base_url + sub_url['href']
         response = scraper.get(download_page_url)
         response.raise_for_status()
-        log_response(response, "-")
+        content_size = len(response.content)
+        logging.info(f"{response.url} [{content_size}/{content_size}] -> \"-\"")
+
         soup = BeautifulSoup(response.content, "html.parser")
 
         sub_url = soup.select_one('a[rel="nofollow"]')
