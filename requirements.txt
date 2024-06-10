@@ -3,3 +3,4 @@ lxml[html_clean]
 pyppeteer
 requests
 pyquery
+fake_useragent
