@@ -1,3 +1,4 @@
 loguru 
 cloudscraper
 beautifulsoup4
+requests-html
