@@ -1,9 +1,3 @@
 loguru 
 lxml[html_clean]
-pyppeteer
-requests
-pyquery
-fake_useragent
-beautifulsoup4
-parse
-w3lib
+requests-html
