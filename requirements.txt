@@ -4,4 +4,4 @@ pyppeteer
 requests
 pyquery
 fake_useragent
-BeautifulSoup
+beautifulsoup4
