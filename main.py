@@ -13,8 +13,8 @@ logging.basicConfig(
 )
 
 def get_download_link(version: str) -> str:
-  url = f"https://apkcombo.com/youtube/com.google.android.youtube/download/phone-{version}-apk"
-  response = scraper.get(url)
+    url = f"https://apkcombo.com/youtube/com.google.android.youtube/download/phone-{version}-apk"
+    response = scraper.get(url)
     response.raise_for_status()
     content_size = len(response.content)
     logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
@@ -30,4 +30,4 @@ def get_download_link(version: str) -> str:
 version = '19.23.33'
 url = get_download_link(version)
 
-logging.info(f{url})
+logging.info(url)
