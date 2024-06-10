@@ -2,3 +2,4 @@ loguru
 cloudscraper
 beautifulsoup4
 requests-html
+lxml[html_clean]
