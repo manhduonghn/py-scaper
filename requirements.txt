@@ -6,3 +6,4 @@ pyquery
 fake_useragent
 beautifulsoup4
 parse
+w3lib
