@@ -7,9 +7,6 @@ from requests_html import HTMLSession
 # Configuration
 base_url = "https://www.apkmirror.com"
 session = HTMLSession()
-session.headers.update(
-    {'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'}
-)
 
 def get_download_page(version: str, app_name: str) -> str:
     conf_file_path = f'./apps/apkmirror/{app_name}.json'
