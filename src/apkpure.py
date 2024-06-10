@@ -1,11 +1,10 @@
 import json
 import logging
-import cloudscraper
-from bs4 import BeautifulSoup
+from requests_html import HTMLSession
 
 # Configuration
-scraper = cloudscraper.create_scraper()
-scraper.headers.update(
+session = HTMLSession()
+session.headers.update(
     {'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'}
 )
 logging.basicConfig(
@@ -13,50 +12,50 @@ logging.basicConfig(
 )
 
 def get_latest_version(app_name: str) -> str:
-    conf_file_path = f'./apps/apkpure/{app_name}.json'   
+    conf_file_path = f'./apps/apkpure/{app_name}.json'
     with open(conf_file_path, 'r') as json_file:
         config = json.load(json_file)
-    
+
     url = f"https://apkpure.net/{config['name']}/{config['package']}/versions"
 
-    response = scraper.get(url)
+    response = session.get(url)
     response.raise_for_status()
     content_size = len(response.content)
     logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
-    soup = BeautifulSoup(response.content, "html.parser")
-    version_info = soup.find('div', class_='ver-top-down')
+
+    version_info = response.html.find('div.ver-top-down', first=True)
 
     if version_info:
-        version = version_info['data-dt-version']
+        version = version_info.attrs.get('data-dt-version')
         if version:
             return version
-            
+
     return None
 
 def get_download_link(version: str, app_name: str) -> str:
-    conf_file_path = f'./apps/apkpure/{app_name}.json'   
+    conf_file_path = f'./apps/apkpure/{app_name}.json'
     with open(conf_file_path, 'r') as json_file:
         config = json.load(json_file)
-    
+
     url = f"https://apkpure.net/{config['name']}/{config['package']}/download/{version}"
 
-    response = scraper.get(url)
+    response = session.get(url)
     response.raise_for_status()
     content_size = len(response.content)
     logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
-    soup = BeautifulSoup(response.content, "html.parser")
-    download_link = soup.find(
-        'a', href=lambda href: href and f"/APK/{config['package']}" in href
+
+    download_link = response.html.find(
+        f'a[href*="/APK/{config["package"]}"]', first=True
     )
     if download_link:
-        return download_link['href']
-    
+        return download_link.attrs['href']
+
     return None
 
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
 
-    with scraper.get(url, stream=True) as res:
+    with session.get(url, stream=True) as res:
         res.raise_for_status()
 
         final_url = res.url
@@ -67,13 +66,13 @@ def download_resource(url: str, name: str) -> str:
             for chunk in res.iter_content(chunk_size=8192):
                 file.write(chunk)
                 downloaded_size += len(chunk)
-                
+
         logging.info(
             f"URL:{final_url} [{downloaded_size}/{total_size}] -> \"{name}\" [1]"
         )
 
     return filepath
-    
+
 def download_apkpure(app_name: str) -> str:
     version = get_latest_version(app_name)
     download_link = get_download_link(version, app_name)
