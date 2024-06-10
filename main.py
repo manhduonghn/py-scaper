@@ -1,30 +1,22 @@
 import json
 import logging
-import cloudscraper 
-from bs4 import BeautifulSoup
+from requests_html import HTMLSession
 
 # Configuration
-scraper = cloudscraper.create_scraper()
-scraper.headers.update(
-    {'User-Agent': 'Mozilla/5.0'}
-)
+session = HTMLSession()
 logging.basicConfig(
   level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
 )
 
 def get_download_link(version: str) -> str:
-    url = f"https://apkcombo.com/vi/youtube/com.google.android.youtube/download/phone-{version}-apk"
-    response = scraper.get(url)
+    url = f"https://apkcombo.com/youtube/com.google.android.youtube/download/phone-{version}-apk"
+    response = session.get(url)
     response.raise_for_status()
     content_size = len(response.content)
     logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
-    soup = BeautifulSoup(response.content, "html.parser")
-    download_link = soup.find(
-        'a', href=lambda href: href and f"com.apk?" in href
-    )
+    download_link = response.html.find('a', containing="com.apk?", first=True)
     if download_link:
-        return download_link['href']
-    
+        return download_link.attrs['href']
     return None
 
 version = '19.23.33'
