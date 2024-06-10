@@ -4,9 +4,6 @@ from requests_html import HTMLSession
 
 # Configuration
 session = HTMLSession()
-session.headers.update(
-    {'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'}
-)
 
 def get_latest_version(app_name: str) -> str:
     conf_file_path = f'./apps/apkpure/{app_name}.json'
