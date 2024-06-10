@@ -1,3 +1,4 @@
 loguru 
 lxml[html_clean]
 pyppeteer
+requests
