@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 # Configuration
 scraper = cloudscraper.create_scraper()
 scraper.headers.update(
-    {'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'}
+    {'User-Agent': 'Mozilla/5.0'}
 )
 logging.basicConfig(
   level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
