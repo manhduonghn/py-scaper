@@ -9,7 +9,7 @@ logging.basicConfig(
 )
 
 def get_download_link(version: str) -> str:
-    url = f"https://apkcombo.com/youtube/com.google.android.youtube/download/phone-{version}-apk"
+    url = f"https://apkcombo.com/vi/youtube/com.google.android.youtube/download/phone-{version}-apk"
     response = session.get(url)
     response.raise_for_status()
     content_size = len(response.content)
