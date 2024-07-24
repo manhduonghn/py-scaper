@@ -27,7 +27,7 @@ def get_latest_version(app_name: str) -> str:
     version_spans = soup.select('#versions-items-list .version')
     versions = [span.text for span in version_spans]
     highest_version = max(versions)
-    logger.info(f"{highest_version}")    
+    logging.info(f"{highest_version}")    
     return highest_version
 
 def get_download_link(version: str, app_name: str) -> str:
