@@ -1,3 +1,4 @@
 loguru 
+python-cronet
 cloudscraper
 beautifulsoup4
