@@ -135,18 +135,8 @@ def download_resource(url: str, name: str) -> str:
     return filepath
 
 def download_apkmirror(app_name: str) -> str:
-    version="19.16.39"
-    #version = get_latest_version(app_name)
-    if not version:
-        return None
-
+    version = get_latest_version(app_name)
     download_page = get_download_page(version, app_name)
-    if not download_page:
-        return None
-
     download_link = extract_download_link(download_page)
-    if not download_link:
-        return None
-
     filename = f"{app_name}-v{version}.apk"
     return download_resource(download_link, filename)
