@@ -22,20 +22,21 @@ def get_response(url, method='get', max_retries=5, **kwargs):
     for attempt in range(1, max_retries + 1):
         try:
             response = scraper.request(method, url, **kwargs)
-            response.raise_for_status()
+            response.raise_for_status()  # Kiểm tra lỗi HTTP (4xx, 5xx)
             return response
         except cloudscraper.exceptions.CloudflareChallengeError:
             logging.warning(f"Cloudflare challenge detected. Attempt {attempt}/{max_retries} for URL: {url}")
-            time.sleep(5)  # Wait before retrying
+            time.sleep(5)  # Đợi trước khi thử lại
         except cloudscraper.exceptions.CloudflareCaptchaError:
             logging.error(f"CAPTCHA encountered at {url}. Unable to proceed.")
             return None
-        except cloudscraper.exceptions.RequestException as e:  # Tương tự như `requests.exceptions`
+        except Exception as e:  # Sử dụng ngoại lệ tổng quát của Python để thay thế RequestException
             logging.error(f"Error: {e}. Attempt {attempt}/{max_retries} for URL: {url}")
             time.sleep(5)
 
     logging.error(f"Failed to retrieve {url} after {max_retries} attempts.")
     return None
+    
 
 def get_download_page(version: str, app_name: str) -> str:
     conf_file_path = f'./apps/apkmirror/{app_name}.json'
