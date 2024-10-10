@@ -1,8 +1,13 @@
+import os
+import re
+import json
 import time
+import logging
 import cloudscraper
+from urllib.parse import urljoin
+
 from bs4 import BeautifulSoup
 
-# Tạo đối tượng Cloudscraper với xác thực tự động
 scraper = cloudscraper.create_scraper()
 
 # Các thông số cơ bản
@@ -18,16 +23,80 @@ headers = {
     'Referer': download_page_url
 }
 
-# Hàm trích xuất liên kết tải xuống từ trang ban đầu
-def extract_download_link(page: str) -> str:
-    response = scraper.get(page, headers=headers)
+def get_download_page(version: str, app_name: str) -> str:
+    conf_file_path = f'./apps/apkmirror/{app_name}.json'   
+    with open(conf_file_path, 'r') as json_file:
+        config = json.load(json_file)
+
+    criteria = [config['type'], config['arch'], config['dpi']]
+    url = (f"{base_url}/apk/{config['org']}/{config['name']}/"
+           f"{config['name']}-{version.replace('.', '-')}-release/")
+    response = scraper.get(url)
+    response.raise_for_status()
+    content_size = len(response.content)
+    logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    
     soup = BeautifulSoup(response.content, "html.parser")
-    sub_url = soup.find('a', class_='downloadButton')
-    if sub_url:
-        return base_url + sub_url['href']
+
+    rows = soup.find_all('div', class_='table-row headerFont')
+    for row in rows:
+        row_text = row.get_text()
+        if all(criterion in row_text for criterion in criteria):
+            sub_url = row.find('a', class_='accent_color')
+            if sub_url:
+                return base_url + sub_url['href']
     return None
 
-# Hàm xử lý tải xuống với cập nhật `key` tự động
+def extract_download_link(page: str) -> str:
+    response = scraper.get(page)
+    response.raise_for_status()
+    content_size = len(response.content)
+    logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    
+    soup = BeautifulSoup(response.content, "html.parser")
+
+    sub_url = soup.find('a', class_='downloadButton')
+    if sub_url:
+        download_page_url = base_url + sub_url['href']
+        response = scraper.get(download_page_url)
+        response.raise_for_status()
+        content_size = len(response.content)
+        logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    
+        soup = BeautifulSoup(response.content, "html.parser")
+
+        button = soup.find('a', id='download-link')
+        if button:
+            return base_url + button['href']
+
+    return None
+
+def get_latest_version(app_name: str) -> str:
+    conf_file_path = f'./apps/apkmirror/{app_name}.json'    
+    with open(conf_file_path, 'r') as json_file:
+        config = json.load(json_file)
+        
+    url = f"{base_url}/uploads/?appcategory={config['name']}"
+
+    response = scraper.get(url)
+    response.raise_for_status()
+    content_size = len(response.content)
+    logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    
+    soup = BeautifulSoup(response.content, "html.parser")
+
+    app_rows = soup.find_all("div", class_="appRow")
+    version_pattern = re.compile(r'\d+(\.\d+)*(-[a-zA-Z0-9]+(\.\d+)*)*')
+
+    for row in app_rows:
+        version_text = row.find("h5", class_="appRowTitle").a.text.strip()
+        if "alpha" not in version_text.lower() and "beta" not in version_text.lower():
+            match = version_pattern.search(version_text)
+            if match:
+                return match.group()
+
+    return None
+
 def download_resource(url: str, name: str, max_retries: int = 3, wait_time: int = 10) -> str:
     filepath = f"./{name}"
     for attempt in range(max_retries):
@@ -62,8 +131,7 @@ def download_resource(url: str, name: str, max_retries: int = 3, wait_time: int 
         time.sleep(wait_time)
 
     raise Exception(f"Failed to download {url} after {max_retries} attempts")
-
-
+    
 def download_apkmirror(app_name: str) -> str:
     version = get_latest_version(app_name)
     download_page = get_download_page(version, app_name) 
