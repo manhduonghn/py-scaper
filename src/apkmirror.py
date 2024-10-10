@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import time
 import logging
 import cloudscraper
 
@@ -91,26 +92,37 @@ def get_latest_version(app_name: str) -> str:
 
     return None
 
-def download_resource(url: str, name: str) -> str:
+
+def download_resource(url: str, name: str, max_retries: int = 3) -> str:
     filepath = f"./{name}"
 
-    with scraper.get(url, stream=True) as res:
-        res.raise_for_status()
+    for attempt in range(max_retries):
+        try:
+            with scraper.get(url, stream=True, allow_redirects=True) as res:
+                res.raise_for_status()  # Raise error for bad status codes
 
-        final_url = res.url 
-        total_size = int(res.headers.get('content-length', 0))
-        downloaded_size = 0
+                # Handle redirects and log the final URL
+                final_url = res.url
+                total_size = int(res.headers.get('content-length', 0))
+                downloaded_size = 0
 
-        with open(filepath, "wb") as file:
-            for chunk in res.iter_content(chunk_size=8192):
-                file.write(chunk)
-                downloaded_size += len(chunk)
-                
-        logging.info(
-            f"URL:{final_url} [{downloaded_size}/{total_size}] -> \"{name}\" [1]"
-        )
+                with open(filepath, "wb") as file:
+                    for chunk in res.iter_content(chunk_size=8192):
+                        file.write(chunk)
+                        downloaded_size += len(chunk)
 
-    return filepath
+                logging.info(
+                    f"URL:{final_url} [{downloaded_size}/{total_size}] -> \"{name}\" [1]"
+                )
+                return filepath
+
+        except requests.exceptions.HTTPError as e:
+            logging.error(f"Attempt {attempt+1}/{max_retries} failed with error: {e}")
+            if attempt + 1 == max_retries:
+                raise
+            time.sleep(2)  # Wait before retrying
+
+    raise Exception(f"Failed to download {url} after {max_retries} attempts")
     
 def download_apkmirror(app_name: str) -> str:
     version = get_latest_version(app_name)
