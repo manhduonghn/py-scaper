@@ -14,7 +14,7 @@ scraper.headers.update(
     {'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'}
 )
 logging.basicConfig(
-    level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
+  level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
 )
 
 def get_response(url, method='get', max_retries=5, **kwargs):
@@ -27,13 +27,10 @@ def get_response(url, method='get', max_retries=5, **kwargs):
         except cloudscraper.exceptions.CloudflareChallengeError:
             logging.warning(f"Cloudflare challenge detected. Attempt {attempt}/{max_retries} for URL: {url}")
             time.sleep(5)  # Wait before retrying
-        except requests.exceptions.HTTPError as e:
-            if response.status_code in [403, 503]:
-                logging.warning(f"HTTP error {response.status_code}. Attempt {attempt}/{max_retries} for URL: {url}")
-                time.sleep(5)
-            else:
-                raise e  # Raise other HTTP errors
-        except Exception as e:
+        except cloudscraper.exceptions.CloudflareCaptchaError:
+            logging.error(f"CAPTCHA encountered at {url}. Unable to proceed.")
+            return None
+        except cloudscraper.exceptions.RequestException as e:  # Tương tự như `requests.exceptions`
             logging.error(f"Error: {e}. Attempt {attempt}/{max_retries} for URL: {url}")
             time.sleep(5)
 
