@@ -18,7 +18,7 @@ logging.basicConfig(
   level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-    
+
 def get_download_page(version: str, app_name: str) -> str:
     conf_file_path = f'./apps/apkmirror/{app_name}.json'   
     with open(conf_file_path, 'r') as json_file:
@@ -93,7 +93,6 @@ def get_latest_version(app_name: str) -> str:
 
     return None
 
-
 def download_resource(url: str, name: str, wait_time: int = 10, max_retries: int = 3) -> str:
     filepath = f"./{name}"
 
@@ -138,7 +137,7 @@ def download_resource(url: str, name: str, wait_time: int = 10, max_retries: int
 
         except cloudscraper.exceptions.CloudflareChallengeError as e:
             logging.error(f"Cloudflare challenge error at attempt {attempt + 1}/{max_retries}: {e}")
-        except cloudscraper.exceptions.RequestException as e:
+        except Exception as e:
             logging.error(f"HTTP error at attempt {attempt + 1}/{max_retries}: {e}")
 
         # Đợi một chút trước khi thử lại
@@ -147,7 +146,7 @@ def download_resource(url: str, name: str, wait_time: int = 10, max_retries: int
 
     # Nếu vượt quá số lần thử, thông báo lỗi
     raise Exception(f"Failed to download {url} after {max_retries} attempts")
-    
+
 def download_apkmirror(app_name: str) -> str:
     version = get_latest_version(app_name)
     download_page = get_download_page(version, app_name) 
