@@ -101,21 +101,16 @@ def download_resource(url: str, name: str, wait_time: int = 10, max_retries: int
             # Gửi yêu cầu ban đầu để bắt được quá trình chuyển hướng và xác thực
             logging.info(f"Starting request to {url}. Attempt {attempt + 1}/{max_retries}.")
             
-            # Thực hiện yêu cầu và cho phép chuyển hướng
-            res = scraper.get(url, stream=True, allow_redirects=True)
-            
-            # Kiểm tra nếu yêu cầu trả về trạng thái cần xác thực hoặc chuyển hướng
-            if res.status_code in [301, 302, 303, 307, 308]:
-                logging.info(f"Redirected to {res.headers['Location']}")
-                # Theo dõi URL chuyển hướng mới
-                url = urljoin(url, res.headers['Location'])
+            # Thêm `Referer` vào headers khi tải xuống
+            headers = scraper.headers.copy()
+            headers['Referer'] = url
 
-                # Đợi một khoảng thời gian trước khi tiếp tục
-                logging.info(f"Waiting for {wait_time} seconds before following redirect.")
-                time.sleep(wait_time)
-
-            # Thực hiện yêu cầu tới URL cuối cùng sau khi đợi chuyển hướng
-            with scraper.get(url, stream=True, allow_redirects=True) as final_res:
+            # Thực hiện yêu cầu với headers đã được cập nhật
+            with scraper.get(url, stream=True, allow_redirects=True, headers=headers) as final_res:
+                if final_res.status_code == 403:
+                    logging.error(f"Access forbidden (403). Check headers or try updating the `key`.")
+                    continue
+                
                 final_res.raise_for_status()  # Kiểm tra mã trạng thái HTTP
 
                 # Lấy URL cuối cùng sau khi xử lý chuyển hướng và log URL
