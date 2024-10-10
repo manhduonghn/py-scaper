@@ -17,24 +17,19 @@ logging.basicConfig(
   level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-def get_response(url, method='get', max_retries=5, **kwargs):
-    """Get response using cloudscraper with retry handling for Cloudflare challenges."""
-    for attempt in range(1, max_retries + 1):
-        try:
-            response = scraper.request(method, url, **kwargs)
-            response.raise_for_status()  # Kiểm tra lỗi HTTP (4xx, 5xx)
-            return response
-        except cloudscraper.exceptions.CloudflareChallengeError:
-            logging.warning(f"Cloudflare challenge detected. Attempt {attempt}/{max_retries} for URL: {url}")
-            time.sleep(5)  # Đợi trước khi thử lại
-        except cloudscraper.exceptions.CloudflareCaptchaError:
-            logging.error(f"CAPTCHA encountered at {url}. Unable to proceed.")
-            return None
-        except Exception as e:  # Sử dụng ngoại lệ tổng quát của Python để thay thế RequestException
-            logging.error(f"Error: {e}. Attempt {attempt}/{max_retries} for URL: {url}")
-            time.sleep(5)
-
-    logging.error(f"Failed to retrieve {url} after {max_retries} attempts.")
+def get_response(url, method='get', **kwargs):
+    """Get a single response using cloudscraper without retrying."""
+    try:
+        response = scraper.request(method, url, **kwargs)
+        response.raise_for_status()
+        return response
+    except cloudscraper.exceptions.CloudflareChallengeError:
+        logging.warning(f"Cloudflare challenge detected. Unable to retrieve URL: {url}")
+    except cloudscraper.exceptions.CloudflareCaptchaError:
+        logging.error(f"CAPTCHA encountered at {url}. Unable to proceed.")
+    except Exception as e:
+        logging.error(f"Error: {e} occurred while trying to retrieve URL: {url}")
+    
     return None
     
 
