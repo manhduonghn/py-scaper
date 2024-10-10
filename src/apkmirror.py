@@ -4,6 +4,7 @@ import json
 import time
 import logging
 import cloudscraper
+from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
@@ -93,35 +94,58 @@ def get_latest_version(app_name: str) -> str:
     return None
 
 
-def download_resource(url: str, name: str, max_retries: int = 3) -> str:
+def download_resource(url: str, name: str, wait_time: int = 10, max_retries: int = 3) -> str:
     filepath = f"./{name}"
 
     for attempt in range(max_retries):
         try:
-            with scraper.get(url, stream=True, allow_redirects=True) as res:
-                res.raise_for_status()  # Raise error for bad status codes
+            # Gửi yêu cầu ban đầu để bắt được quá trình chuyển hướng và xác thực
+            logging.info(f"Starting request to {url}. Attempt {attempt + 1}/{max_retries}.")
+            
+            # Thực hiện yêu cầu và cho phép chuyển hướng
+            res = scraper.get(url, stream=True, allow_redirects=True)
+            
+            # Kiểm tra nếu yêu cầu trả về trạng thái cần xác thực hoặc chuyển hướng
+            if res.status_code in [301, 302, 303, 307, 308]:
+                logging.info(f"Redirected to {res.headers['Location']}")
+                # Theo dõi URL chuyển hướng mới
+                url = urljoin(url, res.headers['Location'])
 
-                # Handle redirects and log the final URL
-                final_url = res.url
-                total_size = int(res.headers.get('content-length', 0))
+                # Đợi một khoảng thời gian trước khi tiếp tục
+                logging.info(f"Waiting for {wait_time} seconds before following redirect.")
+                time.sleep(wait_time)
+
+            # Thực hiện yêu cầu tới URL cuối cùng sau khi đợi chuyển hướng
+            with scraper.get(url, stream=True, allow_redirects=True) as final_res:
+                final_res.raise_for_status()  # Kiểm tra mã trạng thái HTTP
+
+                # Lấy URL cuối cùng sau khi xử lý chuyển hướng và log URL
+                final_url = final_res.url
+                total_size = int(final_res.headers.get('content-length', 0))
                 downloaded_size = 0
 
+                # Tải tệp xuống và ghi vào đĩa
                 with open(filepath, "wb") as file:
-                    for chunk in res.iter_content(chunk_size=8192):
-                        file.write(chunk)
-                        downloaded_size += len(chunk)
+                    for chunk in final_res.iter_content(chunk_size=8192):
+                        if chunk:  # Ghi nếu chunk không rỗng
+                            file.write(chunk)
+                            downloaded_size += len(chunk)
 
                 logging.info(
-                    f"URL:{final_url} [{downloaded_size}/{total_size}] -> \"{name}\" [1]"
+                    f"URL: {final_url} [{downloaded_size}/{total_size}] -> \"{name}\" [Success]"
                 )
                 return filepath
 
-        except requests.exceptions.HTTPError as e:
-            logging.error(f"Attempt {attempt+1}/{max_retries} failed with error: {e}")
-            if attempt + 1 == max_retries:
-                raise
-            time.sleep(2)  # Wait before retrying
+        except cloudscraper.exceptions.CloudflareChallengeError as e:
+            logging.error(f"Cloudflare challenge error at attempt {attempt + 1}/{max_retries}: {e}")
+        except cloudscraper.exceptions.RequestException as e:
+            logging.error(f"HTTP error at attempt {attempt + 1}/{max_retries}: {e}")
 
+        # Đợi một chút trước khi thử lại
+        logging.info(f"Retrying after {wait_time} seconds...")
+        time.sleep(wait_time)
+
+    # Nếu vượt quá số lần thử, thông báo lỗi
     raise Exception(f"Failed to download {url} after {max_retries} attempts")
     
 def download_apkmirror(app_name: str) -> str:
