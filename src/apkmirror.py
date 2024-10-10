@@ -1,28 +1,22 @@
 import os
 import re
 import json
-import time
 import logging
 import cloudscraper
-from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-scraper = cloudscraper.create_scraper()
-
-# Các thông số cơ bản
+# Configuration
 base_url = "https://www.apkmirror.com"
-download_page_url = "https://www.apkmirror.com/apk/google-inc/youtube-music/youtube-music-7-22-51-release/"
-filename = "youtube-music-7-22-51.apk"
-max_retries = 3
-wait_time = 10
+scraper = cloudscraper.create_scraper()
+scraper.headers.update(
+    {'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'}
+)
+logging.basicConfig(
+  level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
+)
 
-# Headers chuẩn
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36',
-    'Referer': download_page_url
-}
-
+    
 def get_download_page(version: str, app_name: str) -> str:
     conf_file_path = f'./apps/apkmirror/{app_name}.json'   
     with open(conf_file_path, 'r') as json_file:
@@ -97,40 +91,26 @@ def get_latest_version(app_name: str) -> str:
 
     return None
 
-def download_resource(url: str, name: str, max_retries: int = 3, wait_time: int = 10) -> str:
+def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
-    for attempt in range(max_retries):
-        try:
-            # Gửi yêu cầu tải xuống
-            logging.info(f"Starting request to {url}. Attempt {attempt + 1}/{max_retries}.")
-            with scraper.get(url, stream=True, allow_redirects=True, headers=headers) as final_res:
-                if final_res.status_code == 403:
-                    logging.warning(f"Access forbidden (403) at attempt {attempt + 1}. Updating `key`...")
-                    new_link = extract_download_link(download_page_url)  # Cập nhật key mới
-                    url = new_link  # Cập nhật lại URL với key mới
-                    continue
+
+    with scraper.get(url, stream=True) as res:
+        res.raise_for_status()
+
+        final_url = res.url 
+        total_size = int(res.headers.get('content-length', 0))
+        downloaded_size = 0
+
+        with open(filepath, "wb") as file:
+            for chunk in res.iter_content(chunk_size=8192):
+                file.write(chunk)
+                downloaded_size += len(chunk)
                 
-                final_res.raise_for_status()
-                total_size = int(final_res.headers.get('content-length', 0))
-                downloaded_size = 0
+        logging.info(
+            f"URL:{final_url} [{downloaded_size}/{total_size}] -> \"{name}\" [1]"
+        )
 
-                # Tải xuống và ghi vào tệp
-                with open(filepath, "wb") as file:
-                    for chunk in final_res.iter_content(chunk_size=8192):
-                        if chunk:  # Ghi nếu chunk không rỗng
-                            file.write(chunk)
-                            downloaded_size += len(chunk)
-
-                logging.info(f"Downloaded {name} successfully: {downloaded_size}/{total_size}")
-                return filepath
-
-        except Exception as e:
-            logging.error(f"HTTP error at attempt {attempt + 1}: {e}")
-
-        logging.info(f"Retrying after {wait_time} seconds...")
-        time.sleep(wait_time)
-
-    raise Exception(f"Failed to download {url} after {max_retries} attempts")
+    return filepath
     
 def download_apkmirror(app_name: str) -> str:
     version = get_latest_version(app_name)
