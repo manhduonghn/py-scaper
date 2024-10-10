@@ -93,19 +93,18 @@ def get_latest_version(app_name: str) -> str:
 
     return None
 
-def download_resource(url: str, name: str, wait_time: int = 10, max_retries: int = 3) -> str:
+def download_resource(url: str, name: str, wait_time: int = 10, max_retries: int = 3, referer: str = None) -> str:
     filepath = f"./{name}"
 
     for attempt in range(max_retries):
         try:
-            # Gửi yêu cầu ban đầu để bắt được quá trình chuyển hướng và xác thực
             logging.info(f"Starting request to {url}. Attempt {attempt + 1}/{max_retries}.")
             
-            # Thêm `Referer` vào headers khi tải xuống
             headers = scraper.headers.copy()
-            headers['Referer'] = url
-
-            # Thực hiện yêu cầu với headers đã được cập nhật
+            if referer:
+                headers['Referer'] = referer  # Sử dụng Referer nếu có
+            
+            # Tạo phiên làm việc với Cloudflare và các yêu cầu phù hợp
             with scraper.get(url, stream=True, allow_redirects=True, headers=headers) as final_res:
                 if final_res.status_code == 403:
                     logging.error(f"Access forbidden (403). Check headers or try updating the `key`.")
@@ -113,7 +112,6 @@ def download_resource(url: str, name: str, wait_time: int = 10, max_retries: int
                 
                 final_res.raise_for_status()  # Kiểm tra mã trạng thái HTTP
 
-                # Lấy URL cuối cùng sau khi xử lý chuyển hướng và log URL
                 final_url = final_res.url
                 total_size = int(final_res.headers.get('content-length', 0))
                 downloaded_size = 0
@@ -125,9 +123,7 @@ def download_resource(url: str, name: str, wait_time: int = 10, max_retries: int
                             file.write(chunk)
                             downloaded_size += len(chunk)
 
-                logging.info(
-                    f"URL: {final_url} [{downloaded_size}/{total_size}] -> \"{name}\" [Success]"
-                )
+                logging.info(f"URL: {final_url} [{downloaded_size}/{total_size}] -> \"{name}\" [Success]")
                 return filepath
 
         except cloudscraper.exceptions.CloudflareChallengeError as e:
@@ -135,13 +131,11 @@ def download_resource(url: str, name: str, wait_time: int = 10, max_retries: int
         except Exception as e:
             logging.error(f"HTTP error at attempt {attempt + 1}/{max_retries}: {e}")
 
-        # Đợi một chút trước khi thử lại
         logging.info(f"Retrying after {wait_time} seconds...")
         time.sleep(wait_time)
 
-    # Nếu vượt quá số lần thử, thông báo lỗi
     raise Exception(f"Failed to download {url} after {max_retries} attempts")
-
+    
 def download_apkmirror(app_name: str) -> str:
     version = get_latest_version(app_name)
     download_page = get_download_page(version, app_name) 
