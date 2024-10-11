@@ -24,15 +24,10 @@ def get_selenium_response(url):
     driver.get(url)
 
     # Wait for a specific element to load (modify this as necessary)
-    try:
-        element_present = EC.presence_of_element_located((By.CLASS_NAME, 'table-row headerFont'))
-        WebDriverWait(driver, 10).until(element_present)
-    except Exception as e:
-        print("Element not found within the time limit.", e)
+    element_present = EC.presence_of_element_located((By.CLASS_NAME, 'table-row headerFont'))
+    WebDriverWait(driver, 10).until(element_present)
     
     response = driver.page_source
-    if not response.strip():
-        print("Response is empty!")
     driver.quit()
     return response
 
@@ -80,8 +75,6 @@ def get_latest_version(app_name: str) -> str:
 
     soup = BeautifulSoup(response, "html.parser")
     app_rows = soup.find_all("div", class_="appRow")
-    print(f"{app_rows}")
-    exit(0)
     version_pattern = re.compile(r'\d+(\.\d+)*(-[a-zA-Z0-9]+(\.\d+)*)*')
 
     for row in app_rows:
