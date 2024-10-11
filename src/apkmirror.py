@@ -23,7 +23,7 @@ def get_selenium_response(url):
     options.add_argument("accept-encoding=gzip, deflate, br")
     
     # Xóa các thuộc tính WebDriver để tránh bị phát hiện
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    # options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
 
     driver = uc.Chrome(options=options)
