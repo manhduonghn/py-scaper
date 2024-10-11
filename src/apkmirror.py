@@ -46,8 +46,6 @@ def get_download_page(version: str, app_name: str) -> str:
            f"{config['name']}-{version.replace('.', '-')}-release/")
     
     response = get_selenium_response(url)
-    print(f"{response}")
-    exit(0)
     soup = BeautifulSoup(response, "html.parser")
     rows = soup.find_all('div', class_='table-row headerFont')
     for row in rows:
