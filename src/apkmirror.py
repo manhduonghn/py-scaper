@@ -3,6 +3,7 @@ import time
 import os
 import re
 from selenium import webdriver
+from src.colorlog import logger
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
@@ -47,6 +48,10 @@ def get_download_page(version: str, app_name: str) -> str:
            f"{config['name']}-{version.replace('.', '-')}-release/")
     
     response = get_selenium_response(url)
+    
+    content_size = len(response.content)
+    logger.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    
     soup = BeautifulSoup(response, "html.parser")
     rows = soup.find_all('div', class_='table-row headerFont')
     
@@ -57,11 +62,14 @@ def get_download_page(version: str, app_name: str) -> str:
             if sub_url:
                 return base_url + sub_url['href']
     
-    print(f"Failed to find the download page for version {version} of {app_name}.")
     return None
 
 def extract_download_link(page: str) -> str:
     response = get_selenium_response(page)
+    
+    content_size = len(response.content)
+    logger.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    
     soup = BeautifulSoup(response, "html.parser")
     sub_url = soup.find('a', class_='downloadButton')
     
@@ -74,7 +82,6 @@ def extract_download_link(page: str) -> str:
         if button:
             return base_url + button['href']
 
-    print(f"Failed to extract download link from page: {page}")
     return None  # Return None if no download link is found
 
 def get_latest_version(app_name: str) -> str:
@@ -84,6 +91,9 @@ def get_latest_version(app_name: str) -> str:
 
     url = f"{base_url}/uploads/?appcategory={config['name']}"
     response = get_selenium_response(url)
+
+    content_size = len(response.content)
+    logger.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
 
     soup = BeautifulSoup(response, "html.parser")
     app_rows = soup.find_all("div", class_="appRow")
@@ -96,7 +106,6 @@ def get_latest_version(app_name: str) -> str:
             if match:
                 return match.group()
 
-    print(f"Failed to find the latest version for {app_name}.")
     return None
 
 def download_resource(url: str, name: str) -> str:
@@ -111,7 +120,7 @@ def download_resource(url: str, name: str) -> str:
             file.write(chunk)
             downloaded_size += len(chunk)
 
-    print(f"Downloaded {name}: {url} [{downloaded_size}/{total_size}]")
+    logger.info(f"Downloaded {name}: {url} [{downloaded_size}/{total_size}]")
     return filepath
 
 def download_apkmirror(app_name: str) -> str:
