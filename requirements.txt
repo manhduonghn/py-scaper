@@ -1,6 +1,2 @@
-selenium
-webdriver-manager
-beautifulsoup4
-requests
 cloudscraper
-undetected_chromedriver
+beautifulsoup4
