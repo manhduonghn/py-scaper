@@ -2,7 +2,6 @@ import json
 import time
 import os
 import re
-from sys import exit
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
@@ -43,18 +42,22 @@ def get_download_page(version: str, app_name: str) -> str:
     response = get_selenium_response(url)
     soup = BeautifulSoup(response, "html.parser")
     rows = soup.find_all('div', class_='table-row headerFont')
+    
     for row in rows:
         row_text = row.get_text()
         if all(criterion in row_text for criterion in criteria):
             sub_url = row.find('a', class_='accent_color')
             if sub_url:
                 return base_url + sub_url['href']
+    
+    print(f"Failed to find the download page for version {version} of {app_name}.")
     return None
 
 def extract_download_link(page: str) -> str:
     response = get_selenium_response(page)
     soup = BeautifulSoup(response, "html.parser")
     sub_url = soup.find('a', class_='downloadButton')
+    
     if sub_url:
         download_page_url = base_url + sub_url['href']
         response = get_selenium_response(download_page_url)
@@ -63,7 +66,9 @@ def extract_download_link(page: str) -> str:
         button = soup.find('a', id='download-link')
         if button:
             return base_url + button['href']
-    return None
+
+    print(f"Failed to extract download link from page: {page}")
+    return None  # Return None if no download link is found
 
 def get_latest_version(app_name: str) -> str:
     conf_file_path = f'./apps/apkmirror/{app_name}.json'
@@ -83,11 +88,18 @@ def get_latest_version(app_name: str) -> str:
             match = version_pattern.search(version_text)
             if match:
                 return match.group()
+
+    print(f"Failed to find the latest version for {app_name}.")
     return None
 
 def download_resource(url: str, name: str) -> str:
+    if url is None:
+        print("No URL provided for downloading resource.")
+        return None
+    
     filepath = f"./{name}"
     response = requests.get(url, stream=True)
+    
     if response.status_code != 200:
         print(f"Failed to download resource: {url}")
         return None
@@ -105,7 +117,19 @@ def download_resource(url: str, name: str) -> str:
 
 def download_apkmirror(app_name: str) -> str:
     version = get_latest_version(app_name)
+    if version is None:
+        print(f"Could not get the latest version for {app_name}.")
+        return None
+
     download_page = get_download_page(version, app_name)
+    if download_page is None:
+        print(f"Failed to get download page for version {version} of {app_name}.")
+        return None
+
     download_link = extract_download_link(download_page)
+    if download_link is None:
+        print(f"Failed to extract download link for {app_name}.")
+        return None
+
     filename = f"{app_name}-v{version}.apk"
     return download_resource(download_link, filename)
