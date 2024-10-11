@@ -32,7 +32,7 @@ def get_selenium_response(url):
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
     driver.get(url)
     
-    time.sleep(10)  # Increased time to allow for page load and JS execution
+    #time.sleep(10)  # Increased time to allow for page load and JS execution
     
     response = driver.page_source
     driver.quit()
@@ -49,8 +49,7 @@ def get_download_page(version: str, app_name: str) -> str:
     
     response = get_selenium_response(url)
     
-    content_size = len(response.content)
-    logger.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    logger.info(f"URL: {url} -> \"-\" [1]")
     
     soup = BeautifulSoup(response, "html.parser")
     rows = soup.find_all('div', class_='table-row headerFont')
@@ -67,8 +66,7 @@ def get_download_page(version: str, app_name: str) -> str:
 def extract_download_link(page: str) -> str:
     response = get_selenium_response(page)
     
-    content_size = len(response.content)
-    logger.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    logger.info(f"URL: {page} -> \"-\" [1]")
     
     soup = BeautifulSoup(response, "html.parser")
     sub_url = soup.find('a', class_='downloadButton')
@@ -92,8 +90,7 @@ def get_latest_version(app_name: str) -> str:
     url = f"{base_url}/uploads/?appcategory={config['name']}"
     response = get_selenium_response(url)
 
-    content_size = len(response.content)
-    logger.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    logger.info(f"URL: {url} -> \"-\" [1]")
 
     soup = BeautifulSoup(response, "html.parser")
     app_rows = soup.find_all("div", class_="appRow")
