@@ -2,36 +2,25 @@ import json
 import time
 import os
 import re
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-from bs4 import BeautifulSoup
 import requests
-import random
+import undetected_chromedriver.v2 as uc
+from bs4 import BeautifulSoup
 
 # Configuration
 base_url = "https://www.apkmirror.com"
 
-# List of user agents for randomness
-user_agents = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
-    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:85.0) Gecko/20100101 Firefox/85.0",
-    # Add more user agents as needed
-]
-
 def get_selenium_response(url):
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument(f"user-agent={random.choice(user_agents)}")
+    options = uc.ChromeOptions()
+    options.add_argument("--headless")  # Chạy ở chế độ không có giao diện
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36")
 
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
+    driver = uc.Chrome(options=options)
     driver.get(url)
     
-    time.sleep(10)  # Increased time to allow for page load and JS execution
+    # Cho thời gian để các JavaScript có thể thực thi
+    time.sleep(10)  
     
     response = driver.page_source
     driver.quit()
@@ -75,7 +64,7 @@ def extract_download_link(page: str) -> str:
             return base_url + button['href']
 
     print(f"Failed to extract download link from page: {page}")
-    return None  # Return None if no download link is found
+    return None
 
 def get_latest_version(app_name: str) -> str:
     conf_file_path = f'./apps/apkmirror/{app_name}.json'
@@ -100,9 +89,17 @@ def get_latest_version(app_name: str) -> str:
     return None
 
 def download_resource(url: str, name: str) -> str:
+    if url is None:
+        print("No URL provided for downloading resource.")
+        return None
+    
     filepath = f"./{name}"
     response = requests.get(url, stream=True)
     
+    if response.status_code != 200:
+        print(f"Failed to download resource: {url}")
+        return None
+
     total_size = int(response.headers.get('content-length', 0))
     downloaded_size = 0
 
@@ -116,7 +113,19 @@ def download_resource(url: str, name: str) -> str:
 
 def download_apkmirror(app_name: str) -> str:
     version = get_latest_version(app_name)
+    if version is None:
+        print(f"Could not get the latest version for {app_name}.")
+        return None
+
     download_page = get_download_page(version, app_name)
+    if download_page is None:
+        print(f"Failed to get download page for version {version} of {app_name}.")
+        return None
+
     download_link = extract_download_link(download_page)
+    if download_link is None:
+        print(f"Failed to extract download link for {app_name}.")
+        return None
+
     filename = f"{app_name}-v{version}.apk"
     return download_resource(download_link, filename)
