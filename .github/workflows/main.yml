@@ -30,8 +30,11 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install Dependencies
-        run: pip install -r requirements.txt
-
+        run: | 
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+          pip install -r requirements.txt
+          
       - name: Scraper 
         run: python main.py
         
