@@ -3,7 +3,7 @@ import time
 import os
 import re
 import requests
-import undetected_chromedriver.v2 as uc
+import undetected_chromedriver as uc
 from bs4 import BeautifulSoup
 
 # Configuration
