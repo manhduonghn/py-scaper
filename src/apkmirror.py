@@ -42,6 +42,7 @@ def get_download_page(version: str, app_name: str) -> str:
     response = get_selenium_response(url)
     soup = BeautifulSoup(response, "html.parser")
     rows = soup.find_all('div', class_='table-row headerFont')
+    print(f"{rows}")
     
     for row in rows:
         row_text = row.get_text()
@@ -57,6 +58,7 @@ def extract_download_link(page: str) -> str:
     response = get_selenium_response(page)
     soup = BeautifulSoup(response, "html.parser")
     sub_url = soup.find('a', class_='downloadButton')
+    print(f"{sub_url}")
     
     if sub_url:
         download_page_url = base_url + sub_url['href']
@@ -64,6 +66,7 @@ def extract_download_link(page: str) -> str:
 
         soup = BeautifulSoup(response, "html.parser")
         button = soup.find('a', id='download-link')
+        print(f"{button}")
         if button:
             return base_url + button['href']
 
@@ -93,10 +96,6 @@ def get_latest_version(app_name: str) -> str:
     return None
 
 def download_resource(url: str, name: str) -> str:
-    if url is None:
-        print("No URL provided for downloading resource.")
-        return None
-    
     filepath = f"./{name}"
     response = requests.get(url, stream=True)
     
@@ -117,19 +116,7 @@ def download_resource(url: str, name: str) -> str:
 
 def download_apkmirror(app_name: str) -> str:
     version = get_latest_version(app_name)
-    if version is None:
-        print(f"Could not get the latest version for {app_name}.")
-        return None
-
     download_page = get_download_page(version, app_name)
-    if download_page is None:
-        print(f"Failed to get download page for version {version} of {app_name}.")
-        return None
-
     download_link = extract_download_link(download_page)
-    if download_link is None:
-        print(f"Failed to extract download link for {app_name}.")
-        return None
-
     filename = f"{app_name}-v{version}.apk"
     return download_resource(download_link, filename)
