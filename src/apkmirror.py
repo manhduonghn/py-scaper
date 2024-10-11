@@ -15,16 +15,24 @@ base_url = "https://www.apkmirror.com"
 
 def get_selenium_response(url):
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36")
 
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
     driver.get(url)
-    
-    time.sleep(5)  # Allow time for the page to load and JavaScript to execute
+
+    # Wait for a specific element to load (modify this as necessary)
+    try:
+        element_present = EC.presence_of_element_located((By.CLASS_NAME, 'table-row headerFont'))
+        WebDriverWait(driver, 10).until(element_present)
+    except Exception as e:
+        print("Element not found within the time limit.", e)
     
     response = driver.page_source
+    if not response.strip():
+        print("Response is empty!")
     driver.quit()
     return response
 
