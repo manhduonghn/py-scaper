@@ -9,13 +9,9 @@ from bs4 import BeautifulSoup
 
 # Configuration
 base_url = "https://www.apkmirror.com"
-# will give you only mobile chrome User-Agents on Android
-scraper = cloudscraper.create_scraper(
-    browser={
-        'browser': 'chrome',
-        'platform': 'android',
-        'desktop': False
-    }
+scraper = cloudscraper.create_scraper()
+scraper.headers.update(
+    {'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'}
 )
 
 def get_response(url, method='get', **kwargs):
