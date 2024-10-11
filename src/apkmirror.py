@@ -2,6 +2,7 @@ import json
 import time
 import os
 import re
+from sys import exit
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
@@ -71,6 +72,8 @@ def get_latest_version(app_name: str) -> str:
 
     soup = BeautifulSoup(response, "html.parser")
     app_rows = soup.find_all("div", class_="appRow")
+    print(f"{app_rows}")
+    exit(0)
     version_pattern = re.compile(r'\d+(\.\d+)*(-[a-zA-Z0-9]+(\.\d+)*)*')
 
     for row in app_rows:
