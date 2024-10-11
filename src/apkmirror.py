@@ -3,14 +3,13 @@ import re
 import json
 import cloudscraper
 import time
+
 from src.colorlog import logger
 from bs4 import BeautifulSoup
-from DrissionPage import ChromiumPage
-import logging
 
+# Configuration
 base_url = "https://www.apkmirror.com"
-
-# Tạo scraper với User-Agent của Chrome trên Android
+# will give you only mobile chrome User-Agents on Android
 scraper = cloudscraper.create_scraper(
     browser={
         'browser': 'chrome',
@@ -19,71 +18,22 @@ scraper = cloudscraper.create_scraper(
     }
 )
 
-# Bypass Cloudflare bằng cách dùng trình duyệt điều khiển Chromium
-class CloudflareBypasser:
-    def __init__(self, driver: ChromiumPage, max_retries=-1, log=True):
-        self.driver = driver
-        self.max_retries = max_retries
-        self.log = log
-
-    def is_bypassed(self):
-        try:
-            title = self.driver.title.lower()
-            return "just a moment" not in title
-        except Exception as e:
-            logger.error(f"Error checking page title: {e}")
-            return False
-
-    def bypass(self):
-        try_count = 0
-
-        while not self.is_bypassed():
-            if 0 < self.max_retries + 1 <= try_count:
-                logger.error("Exceeded maximum retries. Bypass failed.")
-                break
-
-            logger.info(f"Attempt {try_count + 1}: Verification page detected. Trying to bypass...")
-            time.sleep(2)
-            try_count += 1
-
-        if self.is_bypassed():
-            logger.info("Bypass successful.")
-        else:
-            logger.error("Bypass failed.")
-
-# Hàm dùng cloudscraper hoặc Chromium để lấy phản hồi
 def get_response(url, method='get', **kwargs):
-    """Get a single response using cloudscraper or Chromium bypass."""
+    """Get a single response using cloudscraper without retrying."""
     try:
         response = scraper.request(method, url, **kwargs)
         response.raise_for_status()
         return response
     except cloudscraper.exceptions.CloudflareChallengeError:
-        logger.warning(f"Cloudflare challenge detected. Trying Chromium bypass for URL: {url}")
-        return bypass_cloudflare_with_chromium(url)
+        logger.warning(f"Cloudflare challenge detected. Unable to retrieve URL: {url}")
     except cloudscraper.exceptions.CloudflareCaptchaError:
         logger.error(f"CAPTCHA encountered at {url}. Unable to proceed.")
     except Exception as e:
         logger.error(f"Error: {e} occurred while trying to retrieve URL: {url}")
     
     return None
+    
 
-def bypass_cloudflare_with_chromium(url, max_retries=3):
-    driver = ChromiumPage(headless=True)  # Khởi tạo ChromiumPage
-    driver.get(url)
-
-    bypasser = CloudflareBypasser(driver, max_retries=max_retries)
-    bypasser.bypass()
-
-    if bypasser.is_bypassed():
-        html = driver.page_source
-        driver.close()
-        return html
-    else:
-        driver.close()
-        return None
-
-# Hàm lấy trang tải về
 def get_download_page(version: str, app_name: str) -> str:
     conf_file_path = f'./apps/apkmirror/{app_name}.json'
     with open(conf_file_path, 'r') as json_file:
