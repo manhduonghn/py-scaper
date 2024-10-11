@@ -3,25 +3,40 @@ import time
 import os
 import re
 import requests
+from selenium.webdriver.common.by import By
 import undetected_chromedriver as uc
 from bs4 import BeautifulSoup
 
 # Configuration
 base_url = "https://www.apkmirror.com"
 
+
 def get_selenium_response(url):
     options = uc.ChromeOptions()
     options.add_argument("--headless")  # Chạy ở chế độ không có giao diện
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36")
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36")
+    
+    # Thêm các tiêu đề HTTP thường gặp
+    options.add_argument("accept-language=en-US,en;q=0.9")
+    options.add_argument("accept-encoding=gzip, deflate, br")
+    
+    # Xóa các thuộc tính WebDriver để tránh bị phát hiện
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
 
     driver = uc.Chrome(options=options)
+    
+    # Xóa thuộc tính navigator.webdriver
+    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+
     driver.get(url)
-    
-    # Cho thời gian để các JavaScript có thể thực thi
-    time.sleep(10)  
-    
+
+    # Cho thời gian để JavaScript và các nội dung tải hoàn tất
+    time.sleep(10)
+
+    # Trả về mã nguồn trang
     response = driver.page_source
     driver.quit()
     return response
