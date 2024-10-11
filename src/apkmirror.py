@@ -3,19 +3,21 @@ import re
 import json
 import cloudscraper
 import time
-
 from src.colorlog import logger
 from bs4 import BeautifulSoup
 
 # Configuration
 base_url = "https://www.apkmirror.com"
 scraper = cloudscraper.create_scraper()
-scraper.headers.update(
-    {'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'}
-)
+scraper.headers.update({
+    'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Connection': 'keep-alive',
+})
 
 def get_response(url, method='get', **kwargs):
-    """Get a single response using cloudscraper without retrying."""
+    """Get a single response using cloudscraper with persistent session."""
     try:
         response = scraper.request(method, url, **kwargs)
         response.raise_for_status()
@@ -28,7 +30,6 @@ def get_response(url, method='get', **kwargs):
         logger.error(f"Error: {e} occurred while trying to retrieve URL: {url}")
     
     return None
-    
 
 def get_download_page(version: str, app_name: str) -> str:
     conf_file_path = f'./apps/apkmirror/{app_name}.json'
@@ -43,8 +44,7 @@ def get_download_page(version: str, app_name: str) -> str:
     if not response:
         return None
 
-    content_size = len(response.content)
-    logger.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    logger.info(f"Fetched download page: {response.url}")
 
     soup = BeautifulSoup(response.content, "html.parser")
     rows = soup.find_all('div', class_='table-row headerFont')
@@ -61,8 +61,7 @@ def extract_download_link(page: str) -> str:
     if not response:
         return None
 
-    content_size = len(response.content)
-    logger.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    logger.info(f"Fetched download link page: {response.url}")
 
     soup = BeautifulSoup(response.content, "html.parser")
     sub_url = soup.find('a', class_='downloadButton')
@@ -72,8 +71,7 @@ def extract_download_link(page: str) -> str:
         if not response:
             return None
 
-        content_size = len(response.content)
-        logger.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+        logger.info(f"Fetched download page: {response.url}")
 
         soup = BeautifulSoup(response.content, "html.parser")
         button = soup.find('a', id='download-link')
@@ -91,8 +89,7 @@ def get_latest_version(app_name: str) -> str:
     if not response:
         return None
 
-    content_size = len(response.content)
-    logger.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    logger.info(f"Fetched latest version page: {response.url}")
 
     soup = BeautifulSoup(response.content, "html.parser")
     app_rows = soup.find_all("div", class_="appRow")
@@ -121,7 +118,7 @@ def download_resource(url: str, name: str) -> str:
             file.write(chunk)
             downloaded_size += len(chunk)
 
-    logger.info(f"URL:{final_url} [{downloaded_size}/{total_size}] -> \"{name}\" [1]")
+    logger.info(f"Downloaded {name}: {final_url} [{downloaded_size}/{total_size}]")
     return filepath
 
 def download_apkmirror(app_name: str) -> str:
