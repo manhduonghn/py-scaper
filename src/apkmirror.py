@@ -1,98 +1,85 @@
-import json
-import time
 import os
 import re
-from selenium import webdriver
+import json
+import logging
+import cloudscraper
+
 from src.colorlog import logger
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
-import requests
-import random
 
 # Configuration
 base_url = "https://www.apkmirror.com"
+scraper = cloudscraper.create_scraper()
+scraper.headers.update(
+    {'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'}
+)
+logging.basicConfig(
+  level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
+)
 
-# List of user agents for randomness
-user_agents = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
-    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:85.0) Gecko/20100101 Firefox/85.0",
-    # Add more user agents as needed
-]
-
-def get_selenium_response(url):
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument(f"user-agent={random.choice(user_agents)}")
-
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
-    driver.get(url)
     
-    #time.sleep(10)  # Increased time to allow for page load and JS execution
-    
-    response = driver.page_source
-    driver.quit()
-    return response
-
 def get_download_page(version: str, app_name: str) -> str:
-    conf_file_path = f'./apps/apkmirror/{app_name}.json'
+    conf_file_path = f'./apps/apkmirror/{app_name}.json'   
     with open(conf_file_path, 'r') as json_file:
         config = json.load(json_file)
 
     criteria = [config['type'], config['arch'], config['dpi']]
     url = (f"{base_url}/apk/{config['org']}/{config['name']}/"
            f"{config['name']}-{version.replace('.', '-')}-release/")
+    response = scraper.get(url)
+    response.raise_for_status()
+    content_size = len(response.content)
+    logger.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
     
-    response = get_selenium_response(url)
-    
-    logger.info(f"URL: {url} -> \"-\" [1]")
-    
-    soup = BeautifulSoup(response, "html.parser")
+    soup = BeautifulSoup(response.content, "html.parser")
+
     rows = soup.find_all('div', class_='table-row headerFont')
-    
     for row in rows:
         row_text = row.get_text()
         if all(criterion in row_text for criterion in criteria):
             sub_url = row.find('a', class_='accent_color')
             if sub_url:
                 return base_url + sub_url['href']
-    
     return None
 
 def extract_download_link(page: str) -> str:
-    response = get_selenium_response(page)
+    response = scraper.get(page)
+    response.raise_for_status()
+    content_size = len(response.content)
+    logger.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
     
-    logger.info(f"URL: {page} -> \"-\" [1]")
-    
-    soup = BeautifulSoup(response, "html.parser")
+    soup = BeautifulSoup(response.content, "html.parser")
+
     sub_url = soup.find('a', class_='downloadButton')
-    
     if sub_url:
         download_page_url = base_url + sub_url['href']
-        response = get_selenium_response(download_page_url)
+        response = scraper.get(download_page_url)
+        response.raise_for_status()
+        content_size = len(response.content)
+        logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    
+        soup = BeautifulSoup(response.content, "html.parser")
 
-        soup = BeautifulSoup(response, "html.parser")
         button = soup.find('a', id='download-link')
         if button:
             return base_url + button['href']
 
-    return None  # Return None if no download link is found
+    return None
 
 def get_latest_version(app_name: str) -> str:
-    conf_file_path = f'./apps/apkmirror/{app_name}.json'
+    conf_file_path = f'./apps/apkmirror/{app_name}.json'    
     with open(conf_file_path, 'r') as json_file:
         config = json.load(json_file)
-
+        
     url = f"{base_url}/uploads/?appcategory={config['name']}"
-    response = get_selenium_response(url)
 
-    logger.info(f"URL: {url} -> \"-\" [1]")
+    response = scraper.get(url)
+    response.raise_for_status()
+    content_size = len(response.content)
+    logger.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
+    
+    soup = BeautifulSoup(response.content, "html.parser")
 
-    soup = BeautifulSoup(response, "html.parser")
     app_rows = soup.find_all("div", class_="appRow")
     version_pattern = re.compile(r'\d+(\.\d+)*(-[a-zA-Z0-9]+(\.\d+)*)*')
 
@@ -107,22 +94,28 @@ def get_latest_version(app_name: str) -> str:
 
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
-    response = requests.get(url, stream=True)
-    
-    total_size = int(response.headers.get('content-length', 0))
-    downloaded_size = 0
 
-    with open(filepath, "wb") as file:
-        for chunk in response.iter_content(chunk_size=8192):
-            file.write(chunk)
-            downloaded_size += len(chunk)
+    with scraper.get(url, stream=True) as res:
+        res.raise_for_status()
 
-    logger.info(f"Downloaded {name}: {url} [{downloaded_size}/{total_size}]")
+        final_url = res.url 
+        total_size = int(res.headers.get('content-length', 0))
+        downloaded_size = 0
+
+        with open(filepath, "wb") as file:
+            for chunk in res.iter_content(chunk_size=8192):
+                file.write(chunk)
+                downloaded_size += len(chunk)
+                
+        logger.info(
+            f"URL:{final_url} [{downloaded_size}/{total_size}] -> \"{name}\" [1]"
+        )
+
     return filepath
-
+    
 def download_apkmirror(app_name: str) -> str:
     version = get_latest_version(app_name)
-    download_page = get_download_page(version, app_name)
+    download_page = get_download_page(version, app_name) 
     download_link = extract_download_link(download_page)
     filename = f"{app_name}-v{version}.apk"
     return download_resource(download_link, filename)
