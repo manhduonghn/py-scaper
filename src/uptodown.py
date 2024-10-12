@@ -36,16 +36,20 @@ def create_chrome_driver():
     return driver
 
 # Click on 'See more' button if it exists
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
+
+# Click on 'See more' button if it exists
 def click_see_more(driver):
     try:
-        see_more_button = driver.find_element_by_id("button-list-more")
+        see_more_button = driver.find_element(By.ID, "button-list-more")
         if see_more_button:
             see_more_button.click()
             logging.info("Clicked 'See more' button.")
             time.sleep(2)  # Đợi trang tải thêm nội dung
     except NoSuchElementException:
         logging.info("'See more' button not found or no more content to load.")
-
+        
 # Get the latest version of the app
 def get_latest_version(app_name: str) -> str:
     conf_file_path = f'./apps/uptodown/{app_name}.json'
