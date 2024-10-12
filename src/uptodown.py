@@ -57,7 +57,6 @@ def get_latest_version(app_name: str) -> str:
     
     versions = [span.text for span in version_spans]
     highest_version = max(versions)
-    logging.info(f"Latest version: {highest_version}")
     return highest_version
 
 # Get download link for a specific version
