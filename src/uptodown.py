@@ -83,7 +83,12 @@ def get_download_link(version: str, app_name: str) -> str:
                 return dl_url
         
         click_see_more(driver)
-        soup = BeautifulSoup(driver.page_source, "html.parser")
+        soup = BeautifulSoup(response.content, "html.parser")
+            button = soup.find('button', id='detail-download-button')
+            data_url = button.get('data-url')
+            if data_url:
+                full_url = "https://dw.uptodown.com/dwn/" + data_url
+                return full_url 
 
     driver.quit()
     return None
