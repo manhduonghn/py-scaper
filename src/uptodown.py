@@ -145,7 +145,8 @@ def download_resource(url: str, name: str) -> str:
 
 # Main function to download app from Uptodown
 def download_uptodown(app_name: str) -> str:
-    version = get_latest_version(app_name)
+    version = "18.41.39"
+    # version = get_latest_version(app_name)
     
     if not version:
         logging.error(f"Failed to get the latest version for {app_name}.")
