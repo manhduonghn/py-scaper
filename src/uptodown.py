@@ -1,127 +1,96 @@
 import json
 import logging
-import time
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 
 # Configuration
 logging.basicConfig(
-  level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
+    level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-# Function to get the latest version of the app
+# Create Chrome driver with headless options
+def create_chrome_driver():
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Chạy ở chế độ headless
+    chrome_options.add_argument("--no-sandbox")  # Bỏ qua sandbox mode
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Khắc phục lỗi thiếu bộ nhớ
+    chrome_options.add_argument("--remote-debugging-port=9222")  # Cấu hình remote debugging
+    chrome_options.add_argument("start-maximized")  # Khởi chạy tối đa kích thước
+    chrome_options.add_argument("disable-infobars")  # Tắt thanh thông tin
+    chrome_options.add_argument("--disable-extensions")  # Vô hiệu hóa các extension
+
+    driver = webdriver.Chrome(options=chrome_options)
+    return driver
+
+# Get the latest version of the app
 def get_latest_version(app_name: str) -> str:
     conf_file_path = f'./apps/uptodown/{app_name}.json'
     with open(conf_file_path, 'r') as json_file:
         config = json.load(json_file)
 
     url = f"https://{config['name']}.en.uptodown.com/android/versions"
-
-    # Initialize Selenium WebDriver (you can replace with any browser driver you want)
-    driver = webdriver.Chrome()
+    
+    driver = create_chrome_driver()  # Tạo driver
     driver.get(url)
-
-    # Click "See More" button 4 times to load more versions
-    for _ in range(4):
-        try:
-            # Wait for the "See More" button to be clickable, then click it
-            see_more_button = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'See more')]"))
-            )
-            see_more_button.click()
-            time.sleep(2)  # Wait for content to load after each click
-        except Exception as e:
-            logging.info("No more 'See More' button or error occurred: " + str(e))
-            break
-
-    # Get the page source after clicking "See More"
-    html = driver.page_source
+    
+    soup = BeautifulSoup(driver.page_source, "html.parser")  # Parse HTML từ Selenium
     driver.quit()
 
-    # Parse the page source with BeautifulSoup
-    soup = BeautifulSoup(html, "html.parser")
+    # Lấy danh sách phiên bản từ trang
     version_spans = soup.select('#versions-items-list .version')
-    versions = [span.text.strip() for span in version_spans]
-    highest_version = max(versions, key=lambda v: [int(x) for x in v.split('.')])
-
-    logging.info(f"Highest version found: {highest_version}")
+    versions = [span.text for span in version_spans]
+    highest_version = max(versions)
+    logging.info(f"Latest version: {highest_version}")
     return highest_version
 
-# Function to get the download link for the specific version
+# Get download link for a specific version
 def get_download_link(version: str, app_name: str) -> str:
     conf_file_path = f'./apps/uptodown/{app_name}.json'
     with open(conf_file_path, 'r') as json_file:
         config = json.load(json_file)
-
+    
     url = f"https://{config['name']}.en.uptodown.com/android/versions"
 
-    # Initialize Selenium WebDriver
-    driver = webdriver.Chrome()
+    driver = create_chrome_driver()  # Tạo driver
     driver.get(url)
-
-    # Click "See More" button 4 times to load more versions
-    for _ in range(4):
-        try:
-            see_more_button = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'See more')]"))
-            )
-            see_more_button.click()
-            time.sleep(2)
-        except Exception as e:
-            logging.info("No more 'See More' button or error occurred: " + str(e))
-            break
-
-    # Get the page source after clicking "See More"
-    html = driver.page_source
+    
+    soup = BeautifulSoup(driver.page_source, "html.parser")
     driver.quit()
 
-    # Parse the page source with BeautifulSoup
-    soup = BeautifulSoup(html, "html.parser")
     divs = soup.find_all("div", {"data-url": True})
 
-    # Find the download link for the specified version
     for div in divs:
         version_span = div.find("span", class_="version")
-        if version_span and version_span.text.strip() == version:
+        if version_span and version_span.text == version:
             dl_url = div["data-url"]
-            response = scraper.get(dl_url)
-            response.raise_for_status()
-
-            soup = BeautifulSoup(response.content, "html.parser")
+            driver.get(dl_url)
+            
+            soup = BeautifulSoup(driver.page_source, "html.parser")
             button = soup.find('button', id='detail-download-button')
-            data_url = button['data-url']
-            if data_url:
-                full_url = "https://dw.uptodown.com/dwn/" + data_url
+            if button and 'data-url' in button.attrs:
+                full_url = "https://dw.uptodown.com/dwn/" + button['data-url']
+                logging.info(f"Download URL: {full_url}")
                 return full_url
 
     return None
 
-# Function to download the APK file from the download link
+# Download resource from URL
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}"
 
-    with scraper.get(url, stream=True) as res:
-        res.raise_for_status()
+    driver = create_chrome_driver()
+    driver.get(url)
 
-        final_url = res.url  # Get the final URL after any redirects
-        total_size = int(res.headers.get('content-length', 0))
-        downloaded_size = 0
+    with open(filepath, "wb") as file:
+        file.write(driver.page_source.encode('utf-8'))
 
-        with open(filepath, "wb") as file:
-            for chunk in res.iter_content(chunk_size=8192):
-                file.write(chunk)
-                downloaded_size += len(chunk)
-                
-        logging.info(
-            f"URL:{final_url} [{downloaded_size}/{total_size}] -> \"{name}\" [1]"
-        )
+    driver.quit()
 
+    logging.info(f"Downloaded {name} to {filepath}")
     return filepath
 
-# Main function to download the latest version of the app
+# Main function to download app from Uptodown
 def download_uptodown(app_name: str) -> str:
     version = get_latest_version(app_name)
     download_link = get_download_link(version, app_name)
