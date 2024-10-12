@@ -10,7 +10,7 @@ import os
 
 # Configuration
 logging.basicConfig(
-    level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
+    level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
 )
 
 # Create Chrome driver with headless options
@@ -35,7 +35,7 @@ def click_see_more(driver):
         if see_more_button:
             see_more_button.click()
             logging.info(f"Clicked 'See more' button.")
-            time.sleep(2)  # Đợi trang tải thêm nội dung
+            # time.sleep(2)  # Đợi trang tải thêm nội dung
         else:
             logging.info("'See more' button not found or no more content to load.")
     except NoSuchElementException:
