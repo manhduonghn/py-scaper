@@ -77,8 +77,6 @@ def get_latest_version(app_name: str) -> str:
     driver = create_chrome_driver()  # Tạo driver
     driver.get(url)
     
-    click_see_more(driver)  # Click vào "See more" nếu có
-    
     soup = BeautifulSoup(driver.page_source, "html.parser")  # Parse HTML từ Selenium
     driver.quit()
 
