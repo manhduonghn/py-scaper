@@ -9,6 +9,13 @@ logging.basicConfig(
     level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
 )
 
+user_agents = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:85.0) Gecko/20100101 Firefox/85.0",
+    # Add more user agents as needed
+]
+
 # Create Chrome driver with headless options
 def create_chrome_driver():
     chrome_options = Options()
@@ -19,6 +26,7 @@ def create_chrome_driver():
     chrome_options.add_argument("start-maximized")  # Khởi chạy tối đa kích thước
     chrome_options.add_argument("disable-infobars")  # Tắt thanh thông tin
     chrome_options.add_argument("--disable-extensions")  # Vô hiệu hóa các extension
+    chrome_options.add_argument(f"user-agent={random.choice(user_agents)}")
 
     driver = webdriver.Chrome(options=chrome_options)
     return driver
