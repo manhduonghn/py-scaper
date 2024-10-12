@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
@@ -33,6 +34,7 @@ def click_see_more(driver):
         see_more_button = driver.find_element(By.ID, "button-list-more")
         if see_more_button:
             see_more_button.click()
+            
     except NoSuchElementException:
         pass
 
@@ -50,24 +52,13 @@ def get_latest_version(app_name: str) -> str:
     
     soup = BeautifulSoup(driver.page_source, "html.parser")  # Parse HTML từ Selenium
     driver.quit()
-    
+
     version_spans = soup.select('#versions-items-list .version')
     
     versions = [span.text for span in version_spans]
     highest_version = max(versions)
     logging.info(f"Latest version: {highest_version}")
     return highest_version
-
-# Check if the version is on the page
-def check_version_on_page(soup, version):
-    divs = soup.find_all("div", {"data-url": True})
-    for div in divs:
-        version_span = div.find("span", class_="version")
-        if version_span and version_span.text == version:
-            dl_url = div["data-url"]
-            logging.info(f"Download URL for version {version}: {dl_url}")
-            return dl_url
-    return None
 
 # Get download link for a specific version
 def get_download_link(version: str, app_name: str) -> str:
@@ -82,25 +73,28 @@ def get_download_link(version: str, app_name: str) -> str:
     driver.get(url)
     
     soup = BeautifulSoup(driver.page_source, "html.parser")
-
-    dl_url = check_version_on_page(soup, version)
-    if dl_url:
-        driver.quit()
-        return dl_url
     
     while True:
+        divs = soup.find_all("div", {"data-url": True})
+        for div in divs:
+            version_span = div.find("span", class_="version")
+            if version_span and version_span.text == version:
+                dl_url = div["data-url"]
+                driver.quit()
+                return dl_url
+        
         click_see_more(driver)
         soup = BeautifulSoup(driver.page_source, "html.parser")
-        dl_url = check_version_on_page(soup, version)
-        if dl_url:
-            driver.quit()
-            return dl_url
 
     driver.quit()
     return None
 
 # Download resource from URL
 def download_resource(url: str, name: str) -> str:
+    if not url:
+        logging.error(f"Download URL is None. Cannot download {name}.")
+        return None
+
     filepath = f"./{name}.apk"
 
     driver = create_chrome_driver()
@@ -118,7 +112,6 @@ def download_resource(url: str, name: str) -> str:
 def download_uptodown(app_name: str) -> str:
     version = "18.41.39"
     # version = get_latest_version(app_name)
-    
     download_link = get_download_link(version, app_name)
     filename = f"{app_name}-v{version}"
     return download_resource(download_link, filename)
