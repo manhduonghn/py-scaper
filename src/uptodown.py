@@ -1,12 +1,10 @@
 import json
 import logging
-import random
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
-
 from bs4 import BeautifulSoup
 import os
 
@@ -30,26 +28,18 @@ def create_chrome_driver():
     driver = webdriver.Chrome(options=chrome_options)
     return driver
 
-# Click on 'See more' button up to 4 times if it exists
+# Click on 'See more' button if necessary
 def click_see_more(driver):
-    max_clicks = 4  # Số lần click tối đa
-    clicks = 0
-
-    while clicks < max_clicks:
-        try:
-            see_more_button = driver.find_element(By.ID, "button-list-more")
-            if see_more_button:
-                see_more_button.click()
-                logging.info(f"Clicked 'See more' button {clicks + 1} times.")
-                time.sleep(2)  # Đợi trang tải thêm nội dung
-                clicks += 1
-            else:
-                logging.info("'See more' button not found or no more content to load.")
-                break
-        except NoSuchElementException:
+    try:
+        see_more_button = driver.find_element(By.ID, "button-list-more")
+        if see_more_button:
+            see_more_button.click()
+            logging.info(f"Clicked 'See more' button.")
+            time.sleep(2)  # Đợi trang tải thêm nội dung
+        else:
             logging.info("'See more' button not found or no more content to load.")
-            break
-
+    except NoSuchElementException:
+        logging.info("'See more' button not found or no more content to load.")
 
 # Get the latest version of the app
 def get_latest_version(app_name: str) -> str:
@@ -100,21 +90,26 @@ def get_download_link(version: str, app_name: str) -> str:
     driver = create_chrome_driver()  # Tạo driver
     driver.get(url)
     
-    click_see_more(driver)  # Click vào "See more" nếu có
-    
     soup = BeautifulSoup(driver.page_source, "html.parser")
-    driver.quit()
-
-    divs = soup.find_all("div", {"data-url": True})
-
-    for div in divs:
-        version_span = div.find("span", class_="version")
-        if version_span and version_span.text == version:
-            dl_url = div["data-url"]
-            logging.info(f"Download URL: {dl_url}")
-            return dl_url
-
+    
+    while True:
+        # Tìm kiếm các div chứa link download và phiên bản
+        divs = soup.find_all("div", {"data-url": True})
+        for div in divs:
+            version_span = div.find("span", class_="version")
+            if version_span and version_span.text == version:
+                dl_url = div["data-url"]
+                logging.info(f"Download URL: {dl_url}")
+                driver.quit()
+                return dl_url
+        
+        # Nếu không tìm thấy link download cho version, click "See more"
+        logging.info(f"Version {version} not found on current page, attempting to load more...")
+        click_see_more(driver)
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+    
     logging.error(f"Download link for version {version} not found for {app_name}.")
+    driver.quit()
     return None
 
 # Download resource from URL
@@ -138,18 +133,7 @@ def download_resource(url: str, name: str) -> str:
 
 # Main function to download app from Uptodown
 def download_uptodown(app_name: str) -> str:
-    # version = "19.04.36"
     version = get_latest_version(app_name)
-    
-    if not version:
-        logging.error(f"Failed to get the latest version for {app_name}.")
-        return None
-    
     download_link = get_download_link(version, app_name)
-    
-    if not download_link:
-        logging.error(f"Failed to get the download link for {app_name} version {version}.")
-        return None
-    
     filename = f"{app_name}-v{version}"
     return download_resource(download_link, filename)
