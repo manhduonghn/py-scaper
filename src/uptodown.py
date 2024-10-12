@@ -1,6 +1,5 @@
 import json
 import logging
-import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
@@ -10,7 +9,7 @@ import os
 
 # Configuration
 logging.basicConfig(
-    level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
+    level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
 )
 
 # Create Chrome driver with headless options
@@ -34,13 +33,7 @@ def click_see_more(driver):
         see_more_button = driver.find_element(By.ID, "button-list-more")
         if see_more_button:
             see_more_button.click()
-            logging.info(f"Clicked 'See more' button.")
-            time.sleep(2)  # Đợi trang tải thêm nội dung
-        else:
-            logging.info("'See more' button not found or no more content to load.")
-    except NoSuchElementException:
-        logging.info("'See more' button not found or no more content to load.")
-
+    except NoSuchElementException
 
 # Get the latest version of the app
 def get_latest_version(app_name: str) -> str:
