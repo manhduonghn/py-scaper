@@ -4,6 +4,7 @@ import random
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
+import os
 
 # Configuration
 logging.basicConfig(
@@ -35,6 +36,12 @@ def create_chrome_driver():
 # Get the latest version of the app
 def get_latest_version(app_name: str) -> str:
     conf_file_path = f'./apps/uptodown/{app_name}.json'
+    
+    # Kiểm tra file cấu hình tồn tại không
+    if not os.path.exists(conf_file_path):
+        logging.error(f"Configuration file not found for {app_name}")
+        return None
+
     with open(conf_file_path, 'r') as json_file:
         config = json.load(json_file)
 
@@ -48,6 +55,11 @@ def get_latest_version(app_name: str) -> str:
 
     # Lấy danh sách phiên bản từ trang
     version_spans = soup.select('#versions-items-list .version')
+    
+    if not version_spans:
+        logging.error(f"No versions found for {app_name} on Uptodown.")
+        return None
+    
     versions = [span.text for span in version_spans]
     highest_version = max(versions)
     logging.info(f"Latest version: {highest_version}")
@@ -56,6 +68,12 @@ def get_latest_version(app_name: str) -> str:
 # Get download link for a specific version
 def get_download_link(version: str, app_name: str) -> str:
     conf_file_path = f'./apps/uptodown/{app_name}.json'
+    
+    # Kiểm tra file cấu hình tồn tại không
+    if not os.path.exists(conf_file_path):
+        logging.error(f"Configuration file not found for {app_name}")
+        return None
+
     with open(conf_file_path, 'r') as json_file:
         config = json.load(json_file)
     
@@ -73,20 +91,19 @@ def get_download_link(version: str, app_name: str) -> str:
         version_span = div.find("span", class_="version")
         if version_span and version_span.text == version:
             dl_url = div["data-url"]
-            driver.get(dl_url)
-            
-            soup = BeautifulSoup(driver.page_source, "html.parser")
-            button = soup.find('button', id='detail-download-button')
-            if button and 'data-url' in button.attrs:
-                full_url = "https://dw.uptodown.com/dwn/" + button['data-url']
-                logging.info(f"Download URL: {full_url}")
-                return full_url
+            logging.info(f"Download URL: {dl_url}")
+            return dl_url
 
+    logging.error(f"Download link for version {version} not found for {app_name}.")
     return None
 
 # Download resource from URL
 def download_resource(url: str, name: str) -> str:
-    filepath = f"./{name}"
+    if not url:
+        logging.error(f"Download URL is None. Cannot download {name}.")
+        return None
+
+    filepath = f"./{name}.apk"
 
     driver = create_chrome_driver()
     driver.get(url)
@@ -103,5 +120,5 @@ def download_resource(url: str, name: str) -> str:
 def download_uptodown(app_name: str) -> str:
     version = get_latest_version(app_name)
     download_link = get_download_link(version, app_name)
-    filename = f"{app_name}-v{version}.apk"
+    filename = f"{app_name}-v{version}"
     return download_resource(download_link, filename)
