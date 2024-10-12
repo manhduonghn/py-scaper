@@ -5,6 +5,8 @@ import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+
 from bs4 import BeautifulSoup
 import os
 
@@ -12,13 +14,6 @@ import os
 logging.basicConfig(
     level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
 )
-
-user_agents = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
-    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:85.0) Gecko/20100101 Firefox/85.0",
-    # Add more user agents as needed
-]
 
 # Create Chrome driver with headless options
 def create_chrome_driver():
@@ -34,10 +29,6 @@ def create_chrome_driver():
 
     driver = webdriver.Chrome(options=chrome_options)
     return driver
-
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
-import time
 
 # Click on 'See more' button up to 4 times if it exists
 def click_see_more(driver):
