@@ -102,16 +102,23 @@ def get_download_link(version: str, app_name: str) -> str:
 # Download resource from URL
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}.apk"
-
-    driver = create_chrome_driver()
-    driver.get(url)
-
-    with open(filepath, "wb") as file:
-        file.write(driver.page_source.encode('utf-8'))
-
-    driver.quit()
-
-    logging.info(f"Downloaded {name} to {filepath}")
+    logging.info(f"Starting download for {name} from {url}.")
+    
+    response = requests.get(url, stream=True)
+    
+    if response.status_code == 200:
+        # Log the final URL (after redirects)
+        final_url = response.url
+        logging.info(f"Final download URL: {final_url}")
+        
+        # Save the file
+        with open(filepath, 'wb') as file:
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
+        logging.info(f"Downloaded {name} to {filepath}.")
+    else:
+        logging.error(f"Failed to download {name}. Status code: {response.status_code}")
+    
     return filepath
 
 # Main function to download app from Uptodown
