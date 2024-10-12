@@ -41,6 +41,39 @@ def click_see_more(driver):
     except NoSuchElementException:
         logging.info("'See more' button not found or no more content to load.")
 
+
+# Get the latest version of the app
+def get_latest_version(app_name: str) -> str:
+    conf_file_path = f'./apps/uptodown/{app_name}.json'
+    
+    # Kiểm tra file cấu hình tồn tại không
+    if not os.path.exists(conf_file_path):
+        logging.error(f"Configuration file not found for {app_name}")
+        return None
+
+    with open(conf_file_path, 'r') as json_file:
+        config = json.load(json_file)
+
+    url = f"https://{config['name']}.en.uptodown.com/android/versions"
+    
+    driver = create_chrome_driver()  # Tạo driver
+    driver.get(url)
+    
+    soup = BeautifulSoup(driver.page_source, "html.parser")  # Parse HTML từ Selenium
+    driver.quit()
+
+    # Lấy danh sách phiên bản từ trang
+    version_spans = soup.select('#versions-items-list .version')
+    
+    if not version_spans:
+        logging.error(f"No versions found for {app_name} on Uptodown.")
+        return None
+    
+    versions = [span.text for span in version_spans]
+    highest_version = max(versions)
+    logging.info(f"Latest version: {highest_version}")
+    return highest_version
+
 # Check if the version is on the page
 def check_version_on_page(soup, version):
     divs = soup.find_all("div", {"data-url": True})
