@@ -103,12 +103,19 @@ def get_download_link(version: str, app_name: str) -> str:
     return dl_url
 
 # Download resource from URL
+# Download resource from URL
 def download_resource(url: str, name: str) -> str:
     filepath = f"./{name}.apk"
     logging.info(f"Starting download for {name} from {url}.")
     
     response = requests.get(url, stream=True)
+    
     if response.status_code == 200:
+        # Log the final URL (after redirects)
+        final_url = response.url
+        logging.info(f"Final download URL: {final_url}")
+        
+        # Save the file
         with open(filepath, 'wb') as file:
             for chunk in response.iter_content(chunk_size=8192):
                 file.write(chunk)
