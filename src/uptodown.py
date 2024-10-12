@@ -30,7 +30,7 @@ def create_chrome_driver():
     chrome_options.add_argument("start-maximized")  # Khởi chạy tối đa kích thước
     chrome_options.add_argument("disable-infobars")  # Tắt thanh thông tin
     chrome_options.add_argument("--disable-extensions")  # Vô hiệu hóa các extension
-    chrome_options.add_argument(f"user-agent={random.choice(user_agents)}")
+    chrome_options.add_argument(f"user-agent=Mozilla/5.0")
 
     driver = webdriver.Chrome(options=chrome_options)
     return driver
