@@ -65,7 +65,7 @@ def get_download_link(version: str, app_name: str) -> str:
 
     with open(conf_file_path, 'r') as json_file:
         config = json.load(json_file)
-    
+
     url = f"https://{config['name']}.en.uptodown.com/android/versions"
 
     driver = create_chrome_driver()  # Tạo driver
@@ -74,15 +74,29 @@ def get_download_link(version: str, app_name: str) -> str:
     soup = BeautifulSoup(driver.page_source, "html.parser")
     
     while True:
+        # Look for the version within the available download divs
         divs = soup.find_all("div", {"data-url": True})
         for div in divs:
             version_span = div.find("span", class_="version")
             if version_span and version_span.text == version:
                 dl_url = div["data-url"]
-                driver.quit()
-                return dl_url
-        
+                
+                # Navigate to the version-specific download page
+                driver.get(dl_url)
+                time.sleep(2)  # Wait for the page to load
+
+                # Parse the download page
+                soup = BeautifulSoup(driver.page_source, "html.parser")
+                download_button = soup.find('a', {'id': 'detail-download-button'})
+                if download_button and download_button.get('href'):
+                    download_link = download_button.get('href')
+                    logging.info(f"Found download link: {download_link}")
+                    driver.quit()
+                    return download_link
+
+        # If the "See more" button is available, click to load more versions
         click_see_more(driver)
+        time.sleep(2)  # Wait for content to load after clicking "See more"
         soup = BeautifulSoup(driver.page_source, "html.parser")
 
     driver.quit()
