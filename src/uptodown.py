@@ -38,11 +38,6 @@ def click_see_more(driver):
 # Get the latest version of the app
 def get_latest_version(app_name: str) -> str:
     conf_file_path = f'./apps/uptodown/{app_name}.json'
-    
-    # Kiểm tra file cấu hình tồn tại không
-    if not os.path.exists(conf_file_path):
-        logging.error(f"Configuration file not found for {app_name}")
-        return None
 
     with open(conf_file_path, 'r') as json_file:
         config = json.load(json_file)
@@ -54,13 +49,8 @@ def get_latest_version(app_name: str) -> str:
     
     soup = BeautifulSoup(driver.page_source, "html.parser")  # Parse HTML từ Selenium
     driver.quit()
-
-    # Lấy danh sách phiên bản từ trang
-    version_spans = soup.select('#versions-items-list .version')
     
-    if not version_spans:
-        logging.error(f"No versions found for {app_name} on Uptodown.")
-        return None
+    version_spans = soup.select('#versions-items-list .version')
     
     versions = [span.text for span in version_spans]
     highest_version = max(versions)
@@ -81,11 +71,6 @@ def check_version_on_page(soup, version):
 # Get download link for a specific version
 def get_download_link(version: str, app_name: str) -> str:
     conf_file_path = f'./apps/uptodown/{app_name}.json'
-    
-    # Kiểm tra file cấu hình tồn tại không
-    if not os.path.exists(conf_file_path):
-        logging.error(f"Configuration file not found for {app_name}")
-        return None
 
     with open(conf_file_path, 'r') as json_file:
         config = json.load(json_file)
@@ -97,32 +82,24 @@ def get_download_link(version: str, app_name: str) -> str:
     
     soup = BeautifulSoup(driver.page_source, "html.parser")
 
-    # Kiểm tra nếu phiên bản đã có trên trang đầu tiên
     dl_url = check_version_on_page(soup, version)
     if dl_url:
         driver.quit()
         return dl_url
     
-    # Nếu không có phiên bản trên trang đầu tiên, tiếp tục nhấn "See more"
     while True:
-        logging.info(f"Version {version} not found on current page, attempting to load more...")
-        click_see_more(driver)  # Nhấn nút "See more" để tải thêm
+        click_see_more(driver)
         soup = BeautifulSoup(driver.page_source, "html.parser")
         dl_url = check_version_on_page(soup, version)
         if dl_url:
             driver.quit()
             return dl_url
 
-    logging.error(f"Download link for version {version} not found for {app_name}.")
     driver.quit()
     return None
 
 # Download resource from URL
 def download_resource(url: str, name: str) -> str:
-    if not url:
-        logging.error(f"Download URL is None. Cannot download {name}.")
-        return None
-
     filepath = f"./{name}.apk"
 
     driver = create_chrome_driver()
@@ -141,15 +118,6 @@ def download_uptodown(app_name: str) -> str:
     version = "18.41.39"
     # version = get_latest_version(app_name)
     
-    if not version:
-        logging.error(f"Failed to get the latest version for {app_name}.")
-        return None
-    
     download_link = get_download_link(version, app_name)
-    
-    if not download_link:
-        logging.error(f"Failed to get the download link for {app_name} version {version}.")
-        return None
-    
     filename = f"{app_name}-v{version}"
     return download_resource(download_link, filename)
