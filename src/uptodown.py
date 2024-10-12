@@ -41,7 +41,6 @@ def click_see_more(driver):
     except NoSuchElementException:
         logging.info("'See more' button not found or no more content to load.")
 
-
 # Get the latest version of the app
 def get_latest_version(app_name: str) -> str:
     conf_file_path = f'./apps/uptodown/{app_name}.json'
@@ -74,17 +73,6 @@ def get_latest_version(app_name: str) -> str:
     logging.info(f"Latest version: {highest_version}")
     return highest_version
 
-# Check if the version is on the page
-def check_version_on_page(soup, version):
-    divs = soup.find_all("div", {"data-url": True})
-    for div in divs:
-        version_span = div.find("span", class_="version")
-        if version_span and version_span.text == version:
-            dl_url = div["data-url"]
-            logging.info(f"Download URL for version {version}: {dl_url}")
-            return dl_url
-    return None
-
 # Get download link for a specific version
 def get_download_link(version: str, app_name: str) -> str:
     conf_file_path = f'./apps/uptodown/{app_name}.json'
@@ -103,23 +91,23 @@ def get_download_link(version: str, app_name: str) -> str:
     driver.get(url)
     
     soup = BeautifulSoup(driver.page_source, "html.parser")
-
-    # Kiểm tra nếu phiên bản đã có trên trang đầu tiên
-    dl_url = check_version_on_page(soup, version)
-    if dl_url:
-        driver.quit()
-        return dl_url
     
-    # Nếu không có phiên bản trên trang đầu tiên, tiếp tục nhấn "See more"
     while True:
+        # Tìm kiếm các div chứa link download và phiên bản
+        divs = soup.find_all("div", {"data-url": True})
+        for div in divs:
+            version_span = div.find("span", class_="version")
+            if version_span and version_span.text == version:
+                dl_url = div["data-url"]
+                logging.info(f"Download URL: {dl_url}")
+                driver.quit()
+                return dl_url
+        
+        # Nếu không tìm thấy link download cho version, click "See more"
         logging.info(f"Version {version} not found on current page, attempting to load more...")
-        click_see_more(driver)  # Nhấn nút "See more" để tải thêm
+        click_see_more(driver)
         soup = BeautifulSoup(driver.page_source, "html.parser")
-        dl_url = check_version_on_page(soup, version)
-        if dl_url:
-            driver.quit()
-            return dl_url
-
+    
     logging.error(f"Download link for version {version} not found for {app_name}.")
     driver.quit()
     return None
@@ -147,16 +135,6 @@ def download_resource(url: str, name: str) -> str:
 def download_uptodown(app_name: str) -> str:
     version = "18.41.39"
     # version = get_latest_version(app_name)
-    
-    if not version:
-        logging.error(f"Failed to get the latest version for {app_name}.")
-        return None
-    
     download_link = get_download_link(version, app_name)
-    
-    if not download_link:
-        logging.error(f"Failed to get the download link for {app_name} version {version}.")
-        return None
-    
     filename = f"{app_name}-v{version}"
     return download_resource(download_link, filename)
