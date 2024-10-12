@@ -114,8 +114,6 @@ def download_resource(url: str, name: str) -> str:
 
     filepath = f"./{name}.apk"
 
-    logging.info(f"Starting download from {url}...")
-
     # Using Selenium to initiate download or requests could be better, but we're using Selenium here for consistency
     driver = create_chrome_driver()
     driver.get(url)
