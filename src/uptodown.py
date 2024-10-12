@@ -35,21 +35,31 @@ def create_chrome_driver():
     driver = webdriver.Chrome(options=chrome_options)
     return driver
 
-# Click on 'See more' button if it exists
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
+import time
 
-# Click on 'See more' button if it exists
+# Click on 'See more' button up to 4 times if it exists
 def click_see_more(driver):
-    try:
-        see_more_button = driver.find_element(By.ID, "button-list-more")
-        if see_more_button:
-            see_more_button.click()
-            logging.info("Clicked 'See more' button.")
-            time.sleep(2)  # Đợi trang tải thêm nội dung
-    except NoSuchElementException:
-        logging.info("'See more' button not found or no more content to load.")
-        
+    max_clicks = 4  # Số lần click tối đa
+    clicks = 0
+
+    while clicks < max_clicks:
+        try:
+            see_more_button = driver.find_element(By.ID, "button-list-more")
+            if see_more_button:
+                see_more_button.click()
+                logging.info(f"Clicked 'See more' button {clicks + 1} times.")
+                time.sleep(2)  # Đợi trang tải thêm nội dung
+                clicks += 1
+            else:
+                logging.info("'See more' button not found or no more content to load.")
+                break
+        except NoSuchElementException:
+            logging.info("'See more' button not found or no more content to load.")
+            break
+
+
 # Get the latest version of the app
 def get_latest_version(app_name: str) -> str:
     conf_file_path = f'./apps/uptodown/{app_name}.json'
@@ -139,7 +149,7 @@ def download_resource(url: str, name: str) -> str:
 
 # Main function to download app from Uptodown
 def download_uptodown(app_name: str) -> str:
-    version = "19.16.38"
+    version = "19.04.36"
     # version = get_latest_version(app_name)
     
     if not version:
