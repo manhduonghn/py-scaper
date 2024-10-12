@@ -9,7 +9,6 @@ jobs:
     name: Py Scraper 
     permissions: write-all
     runs-on: ubuntu-latest
-    timeout-minutes: 3
     steps:
       - name: Checkout Repository
         uses: actions/checkout@main
