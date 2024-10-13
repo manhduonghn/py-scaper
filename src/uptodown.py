@@ -43,7 +43,6 @@ def click_see_more(driver):
         if see_more_button:
             logging.info("Clicking 'See more' to load more versions.")
             see_more_button.click()
-            time.sleep(2)  # Give it some time to load more versions
     except NoSuchElementException:
         logging.info("No 'See more' button found, all versions are already loaded.")
         pass
