@@ -87,7 +87,6 @@ def get_download_link(version: str, app_name: str) -> str:
                 # Navigate to the version-specific download page
                 logging.info(f"Found download page for version {version}, navigating to it...")
                 driver.get(dl_url)
-                time.sleep(2)  # Wait for the page to load
 
                 # Parse the download page for the actual download link
                 soup = BeautifulSoup(driver.page_source, "html.parser")
