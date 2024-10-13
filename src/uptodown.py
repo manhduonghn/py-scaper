@@ -134,7 +134,8 @@ def download_resource(url: str, name: str) -> str:
 
 # Main function to download app from Uptodown
 def download_uptodown(app_name: str) -> str:
-    version = get_latest_version(app_name)
+    version = "17.30.33"
+    #version = get_latest_version(app_name)
     download_link = get_download_link(version, app_name)
     filename = f"{app_name}-v{version}"
     return download_resource(download_link, filename)
