@@ -20,11 +20,12 @@ driver = webdriver.Chrome(options=chrome_options)
 url = "https://apkcombo.com/vi/youtube/com.google.android.youtube/download/phone-19.16.39-apk"
 driver.get(url)
 
-# Wait for the page to load and locate the download button by ID
+# Wait for the page to load and locate the download button by XPath
 try:
     wait = WebDriverWait(driver, 15)
-    # Replace 'download-button-id' with the actual ID of the element
-    download_button = wait.until(EC.element_to_be_clickable((By.ID, 'download-button-id')))
+    # Replace with the correct XPath for the APK download button
+    apk_download_xpath = "//a[@href='https://download.apkcombo.com/com.google.android.youtube/YouTube_19.16.39_apkcombo.com.apk']"
+    download_button = wait.until(EC.element_to_be_clickable((By.XPATH, apk_download_xpath)))
     
     # Scroll to the element and click it
     actions = ActionChains(driver)
