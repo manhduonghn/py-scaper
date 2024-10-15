@@ -1,9 +1,11 @@
-name: Py Scraper 
+name: Py Scraper
+
 on:
   push:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+
 jobs:
   scraper:
     name: Py Scraper 
@@ -15,31 +17,27 @@ jobs:
         with:
           fetch-depth: 0
     
-      - name: Install Cloudflared
+      - name: Install WARP/WireGuard
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl
-          curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cloudflared-linux-amd64.deb
-          sudo dpkg -i cloudflared-linux-amd64.deb
-    
-      - name: Authenticate Cloudflared
+          sudo apt-get install -y curl wireguard-tools
+          
+          # Download WARP keys from Cloudflare
+          curl https://pkg.cloudflareclient.com/pubkey.gpg | sudo apt-key add -
+          echo 'deb http://pkg.cloudflareclient.com/ bionic main' | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
+          
+          # Install WARP client
+          sudo apt-get update
+          sudo apt-get install -y cloudflare-warp
+
+      - name: Connect to Warp
         run: |
-          cloudflared login
-          cloudflared tunnel create my-tunnel
-    
-      - name: Create Tunnel Configuration File
-        run: |
-          mkdir -p ~/.cloudflared
-          echo "tunnel: $(cloudflared tunnel list | grep my-tunnel | awk '{print $1}')" > ~/.cloudflared/config.yml
-          echo "credentials-file: /home/runner/.cloudflared/$(ls /home/runner/.cloudflared | grep .json)" >> ~/.cloudflared/config.yml
-          echo "ingress:" >> ~/.cloudflared/config.yml
-          echo "  - hostname: my-hostname.example.com" >> ~/.cloudflared/config.yml
-          echo "    service: http://localhost:3000" >> ~/.cloudflared/config.yml
-          echo "  - service: http_status:404" >> ~/.cloudflared/config.yml
-    
-      - name: Start Cloudflared Tunnel
-        run: |
-          cloudflared tunnel run my-tunnel
+          # Enable Warp
+          sudo warp-cli register
+          sudo warp-cli connect
+
+      - name: Verify Warp Connection
+        run: curl https://www.cloudflare.com/cdn-cgi/trace | grep warp
 
       - name: Install Python
         uses: actions/setup-python@main
@@ -63,7 +61,7 @@ jobs:
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
         with:
-          token: ${{ github.token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
           retain_days: 0
           keep_minimum_runs: 1
