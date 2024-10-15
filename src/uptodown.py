@@ -10,8 +10,11 @@ logging.basicConfig(
 # Create an HTML session and load JavaScript
 def create_html_session():
     session = HTMLSession()
+    session.headers.update({
+        'User-Agent': 'Mozilla/5.0 (Android 13; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0'
+    })
     return session
-
+    
 # Get the latest version of the app
 def get_latest_version(app_name: str) -> str:
     conf_file_path = f'./apps/uptodown/{app_name}.json'
