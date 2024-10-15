@@ -20,11 +20,11 @@ driver = webdriver.Chrome(options=chrome_options)
 url = "https://apkcombo.com/vi/youtube/com.google.android.youtube/download/phone-19.16.39-apk"
 driver.get(url)
 
-# Wait for the page to load and locate the download button
+# Wait for the page to load and locate the download button by ID
 try:
     wait = WebDriverWait(driver, 15)
-    # Wait for the download button to become clickable
-    download_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.download-button')))
+    # Replace 'download-button-id' with the actual ID of the element
+    download_button = wait.until(EC.element_to_be_clickable((By.ID, 'download-button-id')))
     
     # Scroll to the element and click it
     actions = ActionChains(driver)
@@ -33,10 +33,10 @@ try:
 
     print("Download button clicked successfully!")
 
-    # Check if the URL has changed (optional)
+    # Optional: Check the URL
     current_url = driver.current_url
     print(f"Current URL: {current_url}")
-    
+
 except Exception as e:
     print(f"An error occurred: {e}")
 
