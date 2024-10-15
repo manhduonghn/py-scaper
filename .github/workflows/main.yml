@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
     
@@ -30,22 +30,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cloudflare-warp
 
-      - name: Connect to Warp
+      - name: Connect to Warp and Accept ToS
         run: |
-          # Enable Warp
+          # Enable Warp and accept the Terms of Service
           sudo warp-cli register
-          sudo warp-cli connect
+          sudo warp-cli --accept-tos connect
 
       - name: Verify Warp Connection
         run: curl https://www.cloudflare.com/cdn-cgi/trace | grep warp
 
       - name: Install Python
-        uses: actions/setup-python@main
+        uses: actions/setup-python@v3
         with:
           python-version: 3.11
 
       - name: Cache Python packages
-        uses: actions/cache@main
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
