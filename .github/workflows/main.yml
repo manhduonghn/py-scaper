@@ -1,11 +1,9 @@
-name: Py Scraper
-
+name: Py Scraper 
 on:
   push:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
-
 jobs:
   scraper:
     name: Py Scraper 
@@ -13,39 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@main
         with:
           fetch-depth: 0
-    
-      - name: Install WARP/WireGuard
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y curl wireguard-tools
-          
-          # Download WARP keys from Cloudflare
-          curl https://pkg.cloudflareclient.com/pubkey.gpg | sudo apt-key add -
-          echo 'deb http://pkg.cloudflareclient.com/ bionic main' | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
-          
-          # Install WARP client
-          sudo apt-get update
-          sudo apt-get install -y cloudflare-warp
-
-      - name: Connect to Warp and Accept ToS
-        run: |
-          # Enable Warp and accept the Terms of Service
-          sudo warp-cli register
-          sudo warp-cli --accept-tos connect
-
-      - name: Verify Warp Connection
-        run: curl https://www.cloudflare.com/cdn-cgi/trace | grep warp
 
       - name: Install Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@main
         with:
           python-version: 3.11
 
       - name: Cache Python packages
-        uses: actions/cache@v3
+        uses: actions/cache@main
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
@@ -61,7 +37,7 @@ jobs:
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ github.token }}
           repository: ${{ github.repository }}
           retain_days: 0
           keep_minimum_runs: 1
