@@ -44,7 +44,6 @@ jobs:
 
       - name: Download aapt2
         run: |
-          # Tải xuống aapt2 từ Android SDK Build Tools
           mkdir -p android-sdk-build-tools
           curl -L -o android-sdk-build-tools/aapt2.zip https://dl.google.com/android/repository/build-tools/android-29.0.3-linux.zip
           unzip android-sdk-build-tools/aapt2.zip -d android-sdk-build-tools
@@ -52,14 +51,14 @@ jobs:
           chmod +x /usr/local/bin/aapt2
           echo "aapt2 downloaded and installed."
 
-      - name: Scraper 
+      - name: Run Scraper 
         run: python main.py
 
-      - name: Upload APK as artifact
+      - name: Upload Merged APK as artifact
         uses: actions/upload-artifact@main
         with:
-          name: extracted-apk
-          path: ./extracted/*.apk
+          name: merged-apk
+          path: ./merged_apks/merged_app.apk # Đảm bảo đường dẫn đúng tới APK hợp nhất
         
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
