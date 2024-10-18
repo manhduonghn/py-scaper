@@ -10,6 +10,10 @@ from src.uptodown import (
 
 input_apk = download_uptodown('youtube')
 
+logging.info(f"{input_apk}")
+
+exit(0)
+
 url = f'https://github.com/REAndroid/APKEditor/releases/latest'
 
 editor = download_assets_from_repo(url)
