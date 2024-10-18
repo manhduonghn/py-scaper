@@ -133,3 +133,47 @@ def download_uptodown(app_name: str) -> str:
     download_link = get_download_link(version, app_name)
     filename = f"{app_name}-v{version}"
     return download_resource(download_link, filename)
+
+def download_assets_from_repo(release_url):
+    driver = create_chrome_driver()
+    driver.get(release_url)
+    
+    downloaded_files = []
+    
+    try:
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.ID, "repo-content-pjax-container"))
+        )
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+        asset_links = WebDriverWait(driver, 15).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//a[contains(@href, '/releases/download/')]"))
+        )
+
+        for link in asset_links:
+            asset_url = link.get_attribute('href')
+            response = requests.head(asset_url, allow_redirects=True)
+            if response.status_code == 200:
+                download_response = requests.get(asset_url, allow_redirects=True, stream=True)
+                final_url = download_response.url  # Get the final URL after any redirections
+                filename = asset_url.split('/')[-1]
+                total_size = int(download_response.headers.get('Content-Length', 0))
+                downloaded_size = 0
+
+                with open(filename, 'wb') as file:
+                    for chunk in download_response.iter_content(chunk_size=1024):
+                        if chunk:
+                            file.write(chunk)
+                            downloaded_size += len(chunk)
+
+                # Logging the download progress with final_url
+                logging.info(
+                    f"URL:{final_url} [{downloaded_size}/{total_size}] -> \"{filename}\" [1]"
+                )
+                downloaded_files.append(filename)  # Store downloaded filename
+    except Exception as e:
+        logging.error(f"Error while downloading from {release_url}: {e}")
+    finally:
+        driver.quit()
+    
+    return downloaded_files  # Return the list of downloaded files
