@@ -1,18 +1,12 @@
-import os
-import re
 import json
 import logging
+import os
 import requests
-import subprocess
-from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.support import expected_conditions as EC
-
+from selenium.webdriver.common.by import By
+from bs4 import BeautifulSoup
 
 # Configuration
 logging.basicConfig(
@@ -25,7 +19,6 @@ def create_chrome_driver():
     chrome_options.add_argument("--headless")  # Run in headless mode
     chrome_options.add_argument("--no-sandbox")  # Bypass sandbox mode
     chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
-    chrome_options.add_argument("--remote-debugging-port=9222")  # Configure remote debugging
     chrome_options.add_argument("start-maximized")  # Maximize window
     chrome_options.add_argument("disable-infobars")  # Disable infobars
     chrome_options.add_argument("--disable-extensions")  # Disable extensions
@@ -102,8 +95,14 @@ def get_download_link(version: str, app_name: str) -> str:
                     data_url = download_button.get('data-url')
                     full_url = f"https://dw.uptodown.com/dwn/{data_url}"
                     logging.info(f"Found download link: {full_url}")
-                    driver.quit()
-                    return full_url
+
+                    # Get the final download URL from the server response
+                    response = requests.get(full_url)
+                    if response.status_code == 200:
+                        download_url = response.url  # Get the URL from the response
+                        logging.info(f"Final download URL: {download_url}")
+                        driver.quit()
+                        return download_url
 
         # If the "See more" button is available, click to load more versions
         click_see_more(driver)
@@ -112,74 +111,36 @@ def get_download_link(version: str, app_name: str) -> str:
     driver.quit()
     return None
 
-# Download APK resource from URL
-def download_resource(url: str, name: str) -> str:
-    if not url:
-        logging.error(f"Download URL is None. Cannot download {name}.")
-        return None
-
-    filepath = f"./{name}.apk"
-
-    # Using Selenium to initiate download or requests could be better, but we're using Selenium here for consistency
-    driver = create_chrome_driver()
-    driver.get(url)
-
-    with open(filepath, "wb") as file:
-        file.write(driver.page_source.encode('utf-8'))
-
-    driver.quit()
-
-    logging.info(f"Downloaded {name} to {filepath}")
-    return filepath
-
 # Main function to download app from Uptodown
 def download_uptodown(app_name: str) -> str:
-    version = "19.33.35"
-    #version = get_latest_version(app_name)
+    version = "19.33.35"  # Hardcoded version, you can use get_latest_version(app_name) instead
     download_link = get_download_link(version, app_name)
     filename = f"{app_name}-v{version}"
-    return download_resource(download_link, filename)
-
-def download_assets_from_repo(release_url):
-    driver = create_chrome_driver()
-    driver.get(release_url)
     
-    downloaded_files = []
-    
-    try:
-        WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((By.ID, "repo-content-pjax-container"))
-        )
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    if download_link:
+        # Use requests to get the final URL after redirections
+        response = requests.get(download_link, allow_redirects=True)
+        final_url = response.url
+        logging.info(f"Final URL after redirections: {final_url}")
 
-        asset_links = WebDriverWait(driver, 15).until(
-            EC.presence_of_all_elements_located((By.XPATH, "//a[contains(@href, '/releases/download/')]"))
-        )
+        # Extract file extension from the final URL
+        file_extension = os.path.splitext(final_url)[1]  # This will return .apk, .xapk, etc.
 
-        for link in asset_links:
-            asset_url = link.get_attribute('href')
-            response = requests.head(asset_url, allow_redirects=True)
-            if response.status_code == 200:
-                download_response = requests.get(asset_url, allow_redirects=True, stream=True)
-                final_url = download_response.url  # Get the final URL after any redirections
-                filename = asset_url.split('/')[-1]
-                total_size = int(download_response.headers.get('Content-Length', 0))
-                downloaded_size = 0
+        # Dynamically adjust the filename with the correct extension
+        filepath = f"./{filename}{file_extension}"
 
-                with open(filename, 'wb') as file:
-                    for chunk in download_response.iter_content(chunk_size=1024):
-                        if chunk:
-                            file.write(chunk)
-                            downloaded_size += len(chunk)
+        # Now download the file using requests
+        logging.info(f"Downloading the file from {final_url} to {filepath}")
 
-                # Logging the download progress with final_url
-                logging.info(
-                    f"URL:{final_url} [{downloaded_size}/{total_size}] -> \"{filename}\" [1]"
-                )
-                downloaded_files.append(filename)  # Store downloaded filename
-    except Exception as e:
-        logging.error(f"Error while downloading from {release_url}: {e}")
-    finally:
-        driver.quit()
-    
-    return downloaded_files  # Return the list of downloaded files
+        # Stream the download to avoid memory overload with large files
+        with requests.get(final_url, stream=True) as r:
+            r.raise_for_status()
+            with open(filepath, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+
+        logging.info(f"Downloaded {filename} to {filepath}")
+        return filepath
+    else:
+        logging.error("Failed to retrieve the download link.")
+        return None
