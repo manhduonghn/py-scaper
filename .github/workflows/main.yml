@@ -15,12 +15,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu' # See 'Supported distributions' for available options
-          java-version: '11'
-
       - name: Install Python
         uses: actions/setup-python@main
         with:
@@ -37,27 +31,8 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      - name: Download APKTool
-        run: |
-          curl -O https://raw.githubusercontent.com/iBotPeaches/Apktool/master/apktool.jar
-          echo "apktool.jar downloaded."
-
-      - name: Download aapt2
-        run: |
-          # Tải xuống aapt2 từ Android SDK Build Tools (ví dụ phiên bản 30.0.3)
-          curl -L -o aapt2.zip https://dl.google.com/android/repository/build-tools/30.0.3/aapt2
-          chmod +x aapt2
-          mv aapt2 /usr/local/bin/
-          echo "aapt2 downloaded and installed."
-
       - name: Run Scraper 
         run: python main.py
-
-      - name: Upload Merged APK as artifact
-        uses: actions/upload-artifact@main
-        with:
-          name: merged-apk
-          path: ./merged_apks/merged_app.apk # Đảm bảo đường dẫn đúng tới APK hợp nhất
         
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
