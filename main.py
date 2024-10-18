@@ -28,7 +28,8 @@ lib_command = [
     'java',
     '-jar',
     apk_editor,
-    '-h',
+    'm',
+    input_apk,
 ]
 
 logging.info(f"Remove some architectures...")
