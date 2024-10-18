@@ -2,10 +2,11 @@ import glob
 import fnmatch
 
 # Định nghĩa hàm find_file để tìm file .jar theo pattern
-def find_file(pattern, directory='.'):
-    return next(
-        filter(lambda file: fnmatch.fnmatch(file, pattern), glob.glob(f"{directory}/**", recursive=True))
+find_file = lambda pattern: next(
+    filter(
+        lambda file: glob.fnmatch.fnmatch(file, pattern), editor
     )
+)
 
 import subprocess
 
