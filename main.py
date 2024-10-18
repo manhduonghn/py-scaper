@@ -29,6 +29,7 @@ lib_command = [
     '-jar',
     apk_editor,
     'm',
+    '-i',
     input_apk,
 ]
 
