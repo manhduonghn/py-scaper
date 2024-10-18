@@ -1,4 +1,6 @@
-import logging 
+import glob
+import fnmatch
+import logging
 
 from src.uptodown import (
     download_uptodown,
@@ -20,3 +22,26 @@ find_file = lambda pattern: next(
 apk_editor = find_file('APKEditor*.jar')
 
 logging.info(f"{apk_editor}")
+
+lib_command = [
+    'java',
+    '-jar',
+    apk_editor,
+    'm',
+    '-i',
+    input_apk,
+]
+
+logging.info(f"Remove some architectures...")
+process_lib = subprocess.Popen(lib_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
+# Print stdout and stderr in real-time with flush
+for line in iter(process_lib.stdout.readline, b''):
+    print(line.decode().strip(), flush=True)  # Direct print for stdout with flush
+        
+for line in iter(process_lib.stderr.readline, b''):
+    print(f"ERROR: {line.decode().strip()}", flush=True)  # Direct print for stderr with flush
+        
+process_lib.stdout.close()
+process_lib.stderr.close()
+process_lib.wait()
