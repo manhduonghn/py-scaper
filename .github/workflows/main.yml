@@ -39,6 +39,12 @@ jobs:
           
       - name: Scraper 
         run: python main.py
+
+      - name: Upload APK as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: extracted-apk
+          path: ./extracted/*.apk
         
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
