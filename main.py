@@ -1,51 +1,44 @@
+import os
+import zipfile
 import glob
 import fnmatch
-import subprocess
-import os
+import logging
 
-# Định nghĩa hàm find_file với xử lý lỗi
-def find_file(pattern, directory='.'):
-    files = glob.glob(f"{directory}/**", recursive=True)
-    found_files = list(filter(lambda file: fnmatch.fnmatch(file, pattern), files))
-    
-    if not found_files:
-        raise FileNotFoundError(f"No file found matching pattern {pattern} in directory {directory}")
-    
-    return found_files[0]  # Trả về file đầu tiên tìm thấy
+from src.uptodown import (
+    download_uptodown,
+)
 
-# Hàm tải xuống APK từ uptodown
-from src.uptodown import download_uptodown, download_assets_from_repo
+# Hàm giải nén XAPK và trả về đường dẫn đến file APK
+def extract_xapk(xapk_path, extract_to='.'):
+    # Đổi tên file thành zip nếu cần thiết
+    if xapk_path.endswith('.xapk'):
+        new_zip_path = xapk_path.replace('.xapk', '.zip')
+        os.rename(xapk_path, new_zip_path)
+        xapk_path = new_zip_path
 
-# Tải xuống file APK từ uptodown
-input_apk = download_uptodown('youtube')
+    # Giải nén file xapk (hoặc zip)
+    with zipfile.ZipFile(xapk_path, 'r') as zip_ref:
+        zip_ref.extractall(extract_to)
 
-# Tải xuống Apktool từ GitHub
-url_apktool = 'https://github.com/iBotPeaches/Apktool/releases/latest'
-apktool_jar = download_assets_from_repo(url_apktool)
+    print(f"Extracted {xapk_path} to {extract_to}")
 
-# Tải xuống uber-apk-signer từ GitHub
-url_signer = 'https://github.com/patrickfav/uber-apk-signer/releases/latest'
-apk_signer_jar = download_assets_from_repo(url_signer)
+    # Tìm file APK đã giải nén
+    for root, dirs, files in os.walk(extract_to):
+        for file in files:
+            if file.endswith('.apk'):
+                apk_path = os.path.join(root, file)
+                print(f"Found APK: {apk_path}")
+                return apk_path
 
-# Kiểm tra xem thư mục có tồn tại không
-if not os.path.exists(apktool_jar):
-    raise FileNotFoundError(f"Directory {apktool_jar} does not exist. Check if the download was successful.")
-if not os.path.exists(apk_signer_jar):
-    raise FileNotFoundError(f"Directory {apk_signer_jar} does not exist. Check if the download was successful.")
+    raise FileNotFoundError("No APK found in the XAPK.")
 
-# Sử dụng find_file để tìm các file .jar đã tải xuống
-try:
-    apktool = find_file('apktool*.jar', apktool_jar)
-    apk_signer = find_file('uber-apk-signer*.jar', apk_signer_jar)
-except FileNotFoundError as e:
-    print(f"Error: {e}")
-    exit(1)  # Kết thúc chương trình nếu không tìm thấy tệp .jar
+# Tải xuống XAPK từ Uptodown
+input_xapk = download_uptodown('youtube')
 
-# Giải nén APK bằng Apktool
-subprocess.run(['java', '-jar', apktool, 'd', '-f', '-o', 'output_dir', input_apk])
+# Giải nén XAPK và lấy đường dẫn tới APK
+apk_path = extract_xapk(input_xapk, './extracted')
 
-# Biên dịch lại APK
-subprocess.run(['java', '-jar', apktool, 'b', 'output_dir', '-o', 'output_recompiled.apk'])
-
-# Ký lại APK bằng uber-apk-signer
-subprocess.run(['java', '-jar', apk_signer, '--apks', 'output_recompiled.apk'])
+# Lưu kết quả APK vào GitHub Action artifact (nếu cần)
+with open('apk_output.txt', 'w') as f:
+    f.write(f"APK path: {apk_path}")
+    print(f"APK path saved to apk_output.txt")
