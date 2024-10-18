@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu' # See 'Supported distributions' for available options
@@ -36,7 +36,22 @@ jobs:
 
       - name: Install Dependencies
         run: pip install -r requirements.txt
-          
+
+      - name: Download APKTool
+        run: |
+          curl -O https://raw.githubusercontent.com/iBotPeaches/Apktool/master/apktool.jar
+          echo "apktool.jar downloaded."
+
+      - name: Download aapt2
+        run: |
+          # Tải xuống aapt2 từ Android SDK Build Tools
+          mkdir -p android-sdk-build-tools
+          curl -L -o android-sdk-build-tools/aapt2.zip https://dl.google.com/android/repository/build-tools/android-29.0.3-linux.zip
+          unzip android-sdk-build-tools/aapt2.zip -d android-sdk-build-tools
+          mv android-sdk-build-tools/aapt2-*/aapt2 /usr/local/bin/
+          chmod +x /usr/local/bin/aapt2
+          echo "aapt2 downloaded and installed."
+
       - name: Scraper 
         run: python main.py
 
