@@ -112,33 +112,38 @@ def get_download_link(version: str, app_name: str) -> str:
     driver.quit()
     return None
 
-# Download APK resource from URL
-def download_resource(url: str, name: str) -> str:
-    if not url:
-        logging.error(f"Download URL is None. Cannot download {name}.")
-        return None
-
-    filepath = f"./{name}.apk"
-
-    # Using Selenium to initiate download or requests could be better, but we're using Selenium here for consistency
-    driver = create_chrome_driver()
-    driver.get(url)
-
-    with open(filepath, "wb") as file:
-        file.write(driver.page_source.encode('utf-8'))
-
-    driver.quit()
-
-    logging.info(f"Downloaded {name} to {filepath}")
-    return filepath
-
-# Main function to download app from Uptodown
 def download_uptodown(app_name: str) -> str:
-    version = "19.33.35"
-    #version = get_latest_version(app_name)
+    version = "19.33.35"  # Hardcoded version, you can use get_latest_version(app_name) instead
     download_link = get_download_link(version, app_name)
     filename = f"{app_name}-v{version}"
-    return download_resource(download_link, filename)
+    
+    if download_link:
+        # Use requests to get the final URL after redirections
+        response = requests.get(download_link, allow_redirects=True)
+        final_url = response.url
+        logging.info(f"Final URL after redirections: {final_url}")
+
+        # Extract file extension from the final URL
+        file_extension = os.path.splitext(final_url)[1]  # This will return .apk, .xapk, etc.
+
+        # Dynamically adjust the filename with the correct extension
+        filepath = f"./{filename}{file_extension}"
+
+        # Now download the file using requests
+        logging.info(f"Downloading the file from {final_url} to {filepath}")
+
+        # Stream the download to avoid memory overload with large files
+        with requests.get(final_url, stream=True) as r:
+            r.raise_for_status()
+            with open(filepath, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+
+        logging.info(f"Downloaded {filename} to {filepath}")
+        return filepath
+    else:
+        logging.error("Failed to retrieve the download link.")
+        return None
 
 def download_assets_from_repo(release_url):
     driver = create_chrome_driver()
