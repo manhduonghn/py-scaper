@@ -8,7 +8,7 @@ from src.uptodown import (
     download_assets_from_repo
 )
 
-input_apk = download_uptodown('youtube')
+input_apk = download_uptodown('soundcloud')
 
 url = f'https://github.com/REAndroid/APKEditor/releases/latest'
 
