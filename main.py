@@ -5,9 +5,18 @@ from src.uptodown import (
     download_assets_from_repo
 )
 
-download_uptodown('youtube')
+input_apk = download_uptodown('youtube')
 
 url = f'https://github.com/REAndroid/APKEditor/releases/latest'
 
 editor = download_assets_from_repo(url)
-logging.info(f"{editor}")
+
+find_file = lambda pattern: next(
+    filter(
+        lambda file: glob.fnmatch.fnmatch(file, pattern), editor
+    )
+)
+
+apk_editor = find_file('APKEditor*.jar')
+
+logging.info(f"{apk_editor}")
