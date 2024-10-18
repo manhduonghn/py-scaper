@@ -44,11 +44,10 @@ jobs:
 
       - name: Download aapt2
         run: |
-          mkdir -p android-sdk-build-tools
-          curl -L -o android-sdk-build-tools/aapt2.zip https://dl.google.com/android/repository/build-tools/android-29.0.3-linux.zip
-          unzip android-sdk-build-tools/aapt2.zip -d android-sdk-build-tools
-          mv android-sdk-build-tools/aapt2-*/aapt2 /usr/local/bin/
-          chmod +x /usr/local/bin/aapt2
+          # Tải xuống aapt2 từ Android SDK Build Tools (ví dụ phiên bản 30.0.3)
+          curl -L -o aapt2.zip https://dl.google.com/android/repository/build-tools/30.0.3/aapt2
+          chmod +x aapt2
+          mv aapt2 /usr/local/bin/
           echo "aapt2 downloaded and installed."
 
       - name: Run Scraper 
