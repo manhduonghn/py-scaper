@@ -10,10 +10,6 @@ from src.uptodown import (
 
 input_apk = download_uptodown('youtube')
 
-logging.info(f"{input_apk}")
-
-exit(0)
-
 url = f'https://github.com/REAndroid/APKEditor/releases/latest'
 
 editor = download_assets_from_repo(url)
@@ -32,22 +28,18 @@ lib_command = [
     'java',
     '-jar',
     apk_editor,
-    'm',
-    '-i',
-    input_apk,
+    '-h',
 ]
 
 logging.info(f"Remove some architectures...")
-# Thêm bufsize=1 và universal_newlines=True
-process_lib = subprocess.Popen(lib_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
+process_lib = subprocess.Popen(lib_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
-# In stdout theo thời gian thực
-for line in iter(process_lib.stdout.readline, ''):
-    print(line.strip(), flush=True)  # In stdout với flush
+# Print stdout and stderr in real-time with flush
+for line in iter(process_lib.stdout.readline, b''):
+    print(line.decode().strip(), flush=True)  # Direct print for stdout with flush
         
-# In stderr theo thời gian thực
-for line in iter(process_lib.stderr.readline, ''):
-    print(f"ERROR: {line.strip()}", flush=True)  # In stderr với flush
+for line in iter(process_lib.stderr.readline, b''):
+    print(f"ERROR: {line.decode().strip()}", flush=True)  # Direct print for stderr with flush
         
 process_lib.stdout.close()
 process_lib.stderr.close()
