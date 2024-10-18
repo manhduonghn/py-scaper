@@ -22,8 +22,6 @@ find_file = lambda pattern: next(
 
 apk_editor = find_file('APKEditor*.jar')
 
-logging.info(f"{apk_editor}")
-
 lib_command = [
     'java',
     '-jar',
@@ -31,19 +29,19 @@ lib_command = [
     'm',
     '-i',
     input_apk,
-    'youtube.apk',
 ]
 
-logging.info(f"Remove some architectures...")
-process_lib = subprocess.Popen(lib_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        
-# Print stdout and stderr in real-time with flush
-for line in iter(process_lib.stdout.readline, b''):
-    print(line.decode().strip(), flush=True)  # Direct print for stdout with flush
-        
-for line in iter(process_lib.stderr.readline, b''):
-    print(f"ERROR: {line.decode().strip()}", flush=True)  # Direct print for stderr with flush
-        
+# Sử dụng bufsize=1 để tắt bộ đệm dòng và universal_newlines=True để xử lý chuỗi
+process_lib = subprocess.Popen(lib_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
+
+# In stdout theo thời gian thực
+for line in iter(process_lib.stdout.readline, ''):
+    print(line.strip(), flush=True)  # In stdout với flush
+
+# In stderr theo thời gian thực
+for line in iter(process_lib.stderr.readline, ''):
+    print(f"ERROR: {line.strip()}", flush=True)
+
 process_lib.stdout.close()
 process_lib.stderr.close()
 process_lib.wait()
