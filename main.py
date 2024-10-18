@@ -31,6 +31,7 @@ lib_command = [
     'm',
     '-i',
     input_apk,
+    'youtube.apk',
 ]
 
 logging.info(f"Remove some architectures...")
