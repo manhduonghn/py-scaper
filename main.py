@@ -1,6 +1,7 @@
 import glob
 import fnmatch
 import logging
+import subprocess
 
 from src.uptodown import (
     download_uptodown,
