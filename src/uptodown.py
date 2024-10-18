@@ -113,7 +113,7 @@ def get_download_link(version: str, app_name: str) -> str:
     return None
 
 def download_uptodown(app_name: str) -> str:
-    version = "19.33.35"  # Hardcoded version, you can use get_latest_version(app_name) instead
+    version = get_latest_version(app_name)
     download_link = get_download_link(version, app_name)
     filename = f"{app_name}-v{version}"
     
