@@ -1,47 +1,28 @@
+import subprocess
 import glob
 import fnmatch
-import logging
-import subprocess
 
-from src.uptodown import (
-    download_uptodown,
-    download_assets_from_repo
-)
+# Hàm tải xuống APK từ uptodown
+from src.uptodown import download_uptodown, download_assets_from_repo
 
 input_apk = download_uptodown('youtube')
 
-url = f'https://github.com/REAndroid/APKEditor/releases/latest'
+# Tìm file Apktool và uber-apk-signer từ repo hoặc thư mục
+url_apktool = 'https://github.com/iBotPeaches/Apktool/releases/latest'
+apktool_jar = download_assets_from_repo(url_apktool)
 
-editor = download_assets_from_repo(url)
+url_signer = 'https://github.com/patrickfav/uber-apk-signer/releases/latest'
+apk_signer_jar = download_assets_from_repo(url_signer)
 
-find_file = lambda pattern: next(
-    filter(
-        lambda file: glob.fnmatch.fnmatch(file, pattern), editor
-    )
-)
+# Tìm các file jar đã tải về
+apktool = find_file('apktool*.jar', apktool_jar)
+apk_signer = find_file('uber-apk-signer*.jar', apk_signer_jar)
 
-apk_editor = find_file('APKEditor*.jar')
+# Giải nén APK
+subprocess.run(['java', '-jar', apktool, 'd', '-f', '-o', 'output_dir', input_apk])
 
-lib_command = [
-    'java',
-    '-jar',
-    apk_editor,
-    'm',
-    '-i',
-    input_apk,
-]
+# Biên dịch lại APK
+subprocess.run(['java', '-jar', apktool, 'b', 'output_dir', '-o', 'output_recompiled.apk'])
 
-# Sử dụng bufsize=1 để tắt bộ đệm dòng và universal_newlines=True để xử lý chuỗi
-process_lib = subprocess.Popen(lib_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
-
-# In stdout theo thời gian thực
-for line in iter(process_lib.stdout.readline, ''):
-    print(line.strip(), flush=True)  # In stdout với flush
-
-# In stderr theo thời gian thực
-for line in iter(process_lib.stderr.readline, ''):
-    print(f"ERROR: {line.strip()}", flush=True)
-
-process_lib.stdout.close()
-process_lib.stderr.close()
-process_lib.wait()
+# Ký lại APK
+subprocess.run(['java', '-jar', apk_signer, '--apks', 'output_recompiled.apk'])
