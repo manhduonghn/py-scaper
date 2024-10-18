@@ -34,14 +34,16 @@ lib_command = [
 ]
 
 logging.info(f"Remove some architectures...")
-process_lib = subprocess.Popen(lib_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+# Thêm bufsize=1 và universal_newlines=True
+process_lib = subprocess.Popen(lib_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
         
-# Print stdout and stderr in real-time with flush
-for line in iter(process_lib.stdout.readline, b''):
-    print(line.decode().strip(), flush=True)  # Direct print for stdout with flush
+# In stdout theo thời gian thực
+for line in iter(process_lib.stdout.readline, ''):
+    print(line.strip(), flush=True)  # In stdout với flush
         
-for line in iter(process_lib.stderr.readline, b''):
-    print(f"ERROR: {line.decode().strip()}", flush=True)  # Direct print for stderr with flush
+# In stderr theo thời gian thực
+for line in iter(process_lib.stderr.readline, ''):
+    print(f"ERROR: {line.strip()}", flush=True)  # In stderr với flush
         
 process_lib.stdout.close()
 process_lib.stderr.close()
